@@ -14,7 +14,7 @@ Notes from Anthony:
 
 To get running do the following:
 
-- cd into 'flask-server' and execute 'pip install -r requirements.txt'
+- cd into 'flask-server' and execute 'pip install -r requirements.txt' (or 'pip3 install -r requirements.txt')
 
 - cd into 'react-app' and execute the following command 'npm install'
 
