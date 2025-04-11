@@ -1,6 +1,10 @@
 from pymongo import MongoClient
+from dotenv import load_dotenv
+import os
 
-mongo_client = MongoClient("mongodb://localhost:27017")
-db = mongo_client["cse312-project"]
+load_dotenv()
+
+mongo_client = MongoClient(os.environ.get("MONGO_URL"))
+db = mongo_client[os.environ.get("MONGO_DOCUMENT")]
 
 user_collection = db["user"]
