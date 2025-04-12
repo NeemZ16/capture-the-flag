@@ -6,7 +6,7 @@ from util.auth import Register, Login, Logout
 
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins="http://localhost:3000")
 api = Api(app)
 
 api.add_resource(Register, "/register")
