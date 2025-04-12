@@ -7,6 +7,8 @@ services:
   server:
     build: ./flask-server
     container_name: flask-backend
+    environment:
+      WAIT_HOSTS: mongo:27017
     ports:
       - '8000:8000'
 
