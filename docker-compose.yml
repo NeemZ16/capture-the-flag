@@ -5,7 +5,9 @@ services:
       - '27017:27017'
 
   server:
-    build: ./flask-server
+    build:
+      context: .
+      dockerfile: server.Dockerfile
     container_name: flask-backend
     environment:
       WAIT_HOSTS: mongo:27017
@@ -13,7 +15,9 @@ services:
       - '8000:8000'
 
   client:
-    build: ./react-app
+    build: 
+      context: .
+      dockerfile: client.Dockerfile
     container_name: react-frontend
     ports:
-      - '8080:3000'
+      - '8080:8080'
