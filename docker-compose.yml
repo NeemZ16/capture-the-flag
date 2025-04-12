@@ -1,0 +1,23 @@
+services:
+  mongo:
+    image: mongo:4.2.5
+    ports:
+      - '27017:27017'
+
+  server:
+    build:
+      context: .
+      dockerfile: server.Dockerfile
+    container_name: flask-backend
+    environment:
+      WAIT_HOSTS: mongo:27017
+    ports:
+      - '8000:8000'
+
+  client:
+    build: 
+      context: .
+      dockerfile: client.Dockerfile
+    container_name: react-frontend
+    ports:
+      - '8080:8080'

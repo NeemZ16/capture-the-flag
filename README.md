@@ -8,20 +8,25 @@ Members:
 - Sooseok Kim
 - Jake Rah
 
-Notes from Anthony:
+## Run on Docker
+Prerequisites: Docker
 
-- Make sure you have Node.js installed (select to automatically install all tools)
+Steps:
+1. Clone repo
+2. Navigate to project directory
+3. Run `docker compose up`
 
-To get running do the following:
+## Run Locally
+Prerequisites:
+- Node
+- Docker/MongoDB
 
-- cd into 'flask-server' and execute 'pip install -r requirements.txt' (or 'pip3 install -r requirements.txt')
+Steps (if using mongo in docker):
+1. Clone repo
+2. Navigate to project directory
+   - activate venv if using
+3. Start the database: `docker compose -f docker-compose.db-only.yml up`
+4. `cd react-app`
+5. `npm run dev`
 
-- cd into 'react-app' and execute the following command 'npm install'
-
-- while being in 'react-app' you will now be able to run the project quickly through just the following command 'npm run dev' (this should be in the docker files i believe later)
-    - it might be better to have 2 terminals open and on one execute "npm run start", and the other execute "npm run start-backend" (execute commands while cd in 'react-app')
-
-currently this will run the flask backend on http://localhost:5000, and will run the react frontend on http://localhost:3000 (both of these should also probably be changed later in docker files)
-
-
-
+Note: to start server and client separately, you can run `npm run start-backend` and `npm run start`, respectively, from the react-app directory.
