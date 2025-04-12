@@ -1,7 +1,7 @@
 
-from flask import Flask, request, jsonify
+from flask import Flask
 from flask_cors import CORS
-from flask_restful import Api, Resource
+from flask_restful import Api
 from util.auth import Register, Login, Logout
 
 
@@ -14,4 +14,4 @@ api.add_resource(Login, "/login")
 api.add_resource(Logout, "/logout")
     
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=8000)

@@ -10,7 +10,7 @@ const Login = () => {
     e.preventDefault();
     
     // Endpoint URL – adjust if necessary
-    const endpoint = 'http://localhost:5000/login';
+    const endpoint = 'http://localhost:8000/login';
     
     try {
       const response = await fetch(endpoint, {
