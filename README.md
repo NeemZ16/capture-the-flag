@@ -30,3 +30,9 @@ Steps (if using mongo in docker):
 5. `npm run dev`
 
 Note: to start server and client separately, you can run `npm run start-backend` and `npm run start`, respectively, from the react-app directory.
+
+## Logging
+Logs are generated in the `logs` directory in the project root. 
+
+Logs should currently have the following format:  
+[Timestamp] [Log level]: [Sender IP] - [Method] [Path]
