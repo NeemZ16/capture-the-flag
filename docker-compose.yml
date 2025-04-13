@@ -10,6 +10,8 @@ services:
       dockerfile: server.Dockerfile
     container_name: flask-backend
     environment:
+      MONGO_URL: mongodb://localhost:27017
+      MONGO_DOCUMENT: cse312-project
       WAIT_HOSTS: mongo:27017
     ports:
       - '8000:8000'
