@@ -13,6 +13,8 @@ services:
       WAIT_HOSTS: mongo:27017
     ports:
       - '8000:8000'
+    volumes:
+      - ./logs:/logs
 
   client:
     build: 
