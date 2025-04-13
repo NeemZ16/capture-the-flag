@@ -10,11 +10,10 @@ CORS(app, origins="http://localhost:8080", supports_credentials=True)
 api = Api(app)
 
 ## ===== LOGGING =====
-
 # ensure logs dir exists
 os.makedirs('../logs', exist_ok=True)
 
-# rotating file handler for 5 max files 1MB each
+# create rotating file handler
 file_handler = RotatingFileHandler('../logs/server.log', maxBytes=1_000_000, backupCount=5)
 file_handler.setLevel(logging.INFO)
 file_handler.setFormatter(logging.Formatter(
