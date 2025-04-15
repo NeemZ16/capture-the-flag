@@ -17,7 +17,7 @@ file_handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(messag
 app.logger.setLevel(logging.INFO)
 app.logger.addHandler(file_handler)
 
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode="eventlet")
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 
 players = {}  # { socketId: { username, team, x, y, hasFlag } }
 team_data = {
@@ -246,4 +246,5 @@ def check_flags_and_score(sid):
                     }, broadcast=True)
 
 if __name__ == "__main__":
-    socketio.run(app, debug=True, host="0.0.0.0", port=8000)
+    # socketio.run(app, debug=True, host="0.0.0.0", port=8000)
+    socketio.run(app, debug=True, host="0.0.0.0", port=8000, allow_unsafe_werkzeug=True)
