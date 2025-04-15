@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Phaser from 'phaser';
 import { io } from 'socket.io-client';
+import { Container, Row, Col, Button} from 'react-bootstrap';
 
 const GamePage = () => {
     const [socket, setSocket] = useState(null);
@@ -255,34 +256,55 @@ const GamePage = () => {
         }
     }, [players]);
 
-    return (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-start', padding: '20px' }}>
-            {/* LEFT PANEL */}
-            <div style={{ width: '300px', marginRight: '20px', textAlign: 'left' }}>
-                <h2>Game Stats</h2>
-                <p><strong>Time Remaining:</strong> {remainingTime} s</p>
-                <h3>Team Scores:</h3>
-                {Object.keys(teamData).map(team => (
-                    <p key={team}><strong>{team.toUpperCase()}:</strong> {teamData[team].score}</p>
-                ))}
-                <hr />
-                <h3>Instructions</h3>
-                <ul>
-                    <li>Hold Arrows or WASD a bit (tapping might be missed).</li>
-                    <li>Open browser console for debug logs.</li>
-                </ul>
-                <button onClick={() => {
-                    if (socket) {
-                        const targetId = prompt("Enter target's socket ID to kill:");
-                        if (targetId) socket.emit('kill', { targetId });
-                    }
-                }}>Kill someone</button>
-            </div>
+    const handleKill = () => {
+        if (socket) {
+            const targetId = prompt("Enter target's socket ID to kill:");
+            if (targetId) {
+                socket.emit('kill', { targetId });
+            }
+        }
+    }
 
-            {/* RIGHT PANEL */}
-            <div id="phaser-container" style={{ border: '2px solid #000', outline: 'none' }} />
-        </div>
-    );
+
+
+  return (
+    <Container fluid className="py-4">
+      <Row>
+        {/* LEFT PANEL: Game Stats and Instructions */}
+        <Col md={4}>
+          <h2>Game Stats</h2>
+          <p>
+            <strong>Time Remaining:</strong> {remainingTime} s
+          </p>
+          <h3>Team Scores:</h3>
+          {Object.keys(teamData).map(team => (
+            <p key={team}>
+              <strong>{team.toUpperCase()}:</strong> {teamData[team].score}
+            </p>
+          ))}
+          <hr />
+          <h3>Instructions</h3>
+          <ul>
+            <li>Hold Arrows or WASD a bit (tapping might be missed).</li>
+            <li>Open browser console for debug logs.</li>
+          </ul>
+          <Button variant="danger" onClick={handleKill}>
+            Kill someone
+          </Button>
+        </Col>
+
+        {/* RIGHT PANEL: Phaser Container */}
+        <Col md={8}>
+          <div
+            id="phaser-container"
+            style={{ border: '2px solid #000', outline: 'none', height: '500px' }}
+          >
+            {/* Phaser game will appear here */}
+          </div>
+        </Col>
+      </Row>
+    </Container>
+  );
 };
 
 export default GamePage;
