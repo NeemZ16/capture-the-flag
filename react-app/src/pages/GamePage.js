@@ -8,6 +8,7 @@ export default function GamePage() {
     const [teamData, setTeamData] = useState({});
     const [remaining, setRemaining] = useState(0);
     const [localId, setLocalId] = useState(null);
+    const [started, setStarted] = useState(false); // start game
 
     const socketRef = useRef(null);
     const gameRef = useRef(null);
@@ -26,6 +27,7 @@ export default function GamePage() {
 
     // connect Socket.IO + start Phaser
     useEffect(() => {
+        if (!started) return; // game doesn't work if the button clicked
         /* connect */
         const stored = localStorage.getItem('playerId');
         const socket = io('http://localhost:8000', {
@@ -153,7 +155,7 @@ export default function GamePage() {
 
         /* cleanup */
         return () => { socket.disconnect(); gameRef.current?.destroy(true); };
-    }, []);
+    }, [started]);
 
     // React → Phaser : avatars
     useEffect(() => {
@@ -181,44 +183,75 @@ export default function GamePage() {
     }
 
     return (
-        <Container fluid style={{ padding: 20 }}>
-          <Row>
-            {/* Sidebar with stats and controls */}
-            <Col md={3} style={{ marginRight: 20 }}>
-              <h2>Game Stats</h2>
-              <p>
-                <strong>Time Left:</strong> {remaining}s
-              </p>
-              <h3>Scores</h3>
-              {Object.entries(teamData).map(([team, info]) => (
-                <p key={team}>
-                  <strong>{team.toUpperCase()}:</strong> {info.score}
-                </p>
-              ))}
-              <hr />
-              <h3>Controls</h3>
-              <ListGroup variant="flush" style={{ paddingLeft: 18 }}>
-                <ListGroup.Item>Move with WASD or arrow keys (hold).</ListGroup.Item>
-                <ListGroup.Item>Open dev‑console for live logs.</ListGroup.Item>
-              </ListGroup>
-              <Button variant="danger" size="sm" onClick={simulateKill} className="mt-2">
-                Simulate Kill
-              </Button>
-            </Col>
+        <div>
+            {/* title */}
+            {!started && (
+                <div
+                    style={{
+                        position: 'absolute',
+                        inset: 0,
+                        background: '#111',
+                        color: '#fff',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 10,
+                    }}
+                >
+                    <h1 style={{ marginBottom: 30 }}>Capture&nbsp;the&nbsp;Flag</h1>
+                    <button
+                        className="btn btn-primary"
+                        style={{ fontSize: 24, padding: '6px 40px' }}
+                        onClick={() => setStarted(true)}
+                    >
+                        Start
+                    </button>
+                </div>
+            )}
 
-            {/* Phaser game container */}
-            <Col>
-              <div
-                id="phaser-container"
-                style={{
-                  border: '2px solid #000',
-                  width: SIZE,
-                  height: SIZE,
-                }}
-              />
-            </Col>
-          </Row>
-        </Container>
+            {/* game */}
+            {started && (
+                <Container fluid style={{ padding: 20 }}>
+                    <Row>
+                        {/* Sidebar with stats and controls */}
+                        <Col md={3} style={{ marginRight: 20 }}>
+                            <h2>Game Stats</h2>
+                            <p>
+                                <strong>Time Left:</strong> {remaining}s
+                            </p>
+                            <h3>Scores</h3>
+                            {Object.entries(teamData).map(([team, info]) => (
+                                <p key={team}>
+                                    <strong>{team.toUpperCase()}:</strong> {info.score}
+                                </p>
+                            ))}
+                            <hr />
+                            <h3>Controls</h3>
+                            <ListGroup variant="flush" style={{ paddingLeft: 18 }}>
+                                <ListGroup.Item>Move with WASD or arrow keys (hold).</ListGroup.Item>
+                                <ListGroup.Item>Open dev‑console for live logs.</ListGroup.Item>
+                            </ListGroup>
+                            <Button variant="danger" size="sm" onClick={simulateKill} className="mt-2">
+                                Simulate Kill
+                            </Button>
+                        </Col>
+
+                        {/* Phaser game container */}
+                        <Col>
+                            <div
+                                id="phaser-container"
+                                style={{
+                                    border: '2px solid #000',
+                                    width: SIZE,
+                                    height: SIZE,
+                                }}
+                            />
+                        </Col>
+                    </Row>
+                </Container>
+            )}
+        </div>
     );
 };
 

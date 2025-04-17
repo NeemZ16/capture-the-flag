@@ -286,6 +286,7 @@ app.logger.info("Socket.IO async_mode = %s", _async_mode)
 
 # Game state
 players = {}           # sid → {username, team, x, y, hasFlag}
+sid_map   = {}        # sid        → playerKey
 team_data = {
     "red":     {"score": 5, "base": {"x": 100, "y": 100},  "flagLocation": {"x": 100, "y": 100}},
     "blue":    {"score": 5, "base": {"x": 900, "y": 100},  "flagLocation": {"x": 900, "y": 100}},
@@ -330,26 +331,33 @@ def _game_clock():
 # Socket.IO event handlers
 @socketio.on("connect")
 def _on_connect():
-    old_id = request.args.get("existingPlayerId")
-    sid = request.sid
+    sid       = request.sid
+    playerKey = request.args.get("playerKey") or sid          # <── NEW
+    old_id    = playerKey in players
 
-    if old_id and old_id in players:                         # browser refresh
-        players[sid] = players.pop(old_id)
-        app.logger.info("SID %s re‑attached to existing player.", sid)
-    else:                                                   # brand‑new join
-        uname = f"Guest_{''.join(random.choices(string.ascii_uppercase, k=5))}"
-        team = random.choice(list(team_data.keys()))
+    if old_id:                           # ▸ welcome back – re‑attach sid
+        sid_map[sid] = playerKey         #   remember the new transport id
+        app.logger.info("Re‑connect: %s keeps same team %s",
+                        playerKey, players[playerKey]["team"])
+
+    else:                                # ▸ brand‑new player
+        team   = random.choice(list(team_data.keys()))
         bx, by = team_data[team]["base"].values()
-        players[sid] = {
-            "username": uname, "team": team,
-            "x": bx + random.randint(-30, 30), "y": by + random.randint(-30, 30),
+        players[playerKey] = {
+            "username": f"Guest_{''.join(random.choices(string.ascii_uppercase, k=5))}",
+            "team": team,
+            "x": bx + random.randint(-30, 30),
+            "y": by + random.randint(-30, 30),
             "hasFlag": None,
         }
-        emit("player_joined", {"playerId": sid, **players[sid]}, broadcast=True, include_self=False)
+        socketio.emit("player_joined",
+                      {"playerId": playerKey, **players[playerKey]},
+                      broadcast=True, include_self=False)
+        sid_map[sid] = playerKey
 
     _start_timers_if_needed()
     emit("init", {
-        "playerId": sid,
+        "playerId": playerKey,
         "players": players,
         "teamData": team_data,
         "remainingTime": _remaining_time()
@@ -358,9 +366,11 @@ def _on_connect():
 @socketio.on("disconnect")
 def _on_disconnect():
     sid = request.sid
-    if sid in players:
-        emit("player_left", {"playerId": sid, "username": players[sid]["username"]}, broadcast=True)
-        players.pop(sid, None)
+    key = sid_map.pop(sid, None)
+    if key and key in players:
+        emit("player_left",
+             {"playerId": key, "username": players[key]["username"]},
+             broadcast=True)
 
 @socketio.on("move")
 def _on_move(data):
@@ -375,22 +385,28 @@ def _on_move(data):
 
 @socketio.on("kill")
 def _on_kill(data):
-    sid, target = request.sid, data.get("targetId")
-    if sid not in players or target not in players:
+    sid, targetKey = request.sid, data.get("targetId")
+    killerKey      = sid_map.get(sid)
+
+    if not killerKey or targetKey not in players:
         return
-    killer, victim = players[sid], players[target]
+
+    killer, victim = players[killerKey], players[targetKey]
 
     if victim["hasFlag"]:
         killer["hasFlag"] = victim["hasFlag"]
         victim["hasFlag"] = None
 
-    # respawn victim
     bx, by = team_data[victim["team"]]["base"].values()
     victim["x"], victim["y"] = bx + random.randint(-30, 30), by + random.randint(-30, 30)
 
     socketio.emit("player_killed", {
-        "killerId": sid, "victimId": target, "killerHasFlag": killer["hasFlag"]
+        "killerId"     : killerKey,
+        "victimId"     : targetKey,
+        "victimPos"    : {"x": victim["x"], "y": victim["y"]},
+        "killerHasFlag": killer["hasFlag"]
     }, broadcast=True)
+
 
 # Flag & scoring logic
 def _check_flag_logic(sid):
