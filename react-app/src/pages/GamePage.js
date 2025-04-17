@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Phaser from 'phaser';
 import { io } from 'socket.io-client';
+import { Container, Row, Col, Button, ListGroup} from 'react-bootstrap';
 
 export default function GamePage() {
     const [players, setPlayers] = useState({});
@@ -173,29 +174,51 @@ export default function GamePage() {
 
     // render UI
     const socket = socketRef.current;
-    return (
-        <div style={{ display: 'flex', padding: 20 }}>
-            <aside style={{ width: 280, marginRight: 20 }}>
-                <h2>Game Stats</h2>
-                <p><strong>Time Left:</strong> {remaining}s</p>
-                <h3>Scores</h3>
-                {Object.entries(teamData).map(([t, i]) => (
-                    <p key={t}><strong>{t.toUpperCase()}:</strong> {i.score}</p>
-                ))}
-                <hr />
-                <h3>Controls</h3>
-                <ul style={{ paddingLeft: 18 }}>
-                    <li>Move with WASD or arrow keys (hold).</li>
-                    <li>Open dev‑console for live logs.</li>
-                </ul>
-                <button className="btn btn-danger btn-sm" onClick={() => {
-                    if (!socket) return;
-                    const id = prompt('Socket‑ID to eliminate:'); if (id) socket.emit('kill', { targetId: id.trim() });
-                }}>Simulate Kill</button>
-            </aside>
+    const simulateKill = () => {
+        if (!socket) return;
+        const id = prompt('Socket-ID to eliminate:');
+        if (id) socket.emit('kill', {targetId: id.trim()});
+    }
 
-            <div id="phaser-container"
-                style={{ border: '2px solid #000', width: SIZE, height: SIZE }} />
-        </div>
+    return (
+        <Container fluid style={{ padding: 20 }}>
+          <Row>
+            {/* Sidebar with stats and controls */}
+            <Col md={3} style={{ marginRight: 20 }}>
+              <h2>Game Stats</h2>
+              <p>
+                <strong>Time Left:</strong> {remaining}s
+              </p>
+              <h3>Scores</h3>
+              {Object.entries(teamData).map(([team, info]) => (
+                <p key={team}>
+                  <strong>{team.toUpperCase()}:</strong> {info.score}
+                </p>
+              ))}
+              <hr />
+              <h3>Controls</h3>
+              <ListGroup variant="flush" style={{ paddingLeft: 18 }}>
+                <ListGroup.Item>Move with WASD or arrow keys (hold).</ListGroup.Item>
+                <ListGroup.Item>Open dev‑console for live logs.</ListGroup.Item>
+              </ListGroup>
+              <Button variant="danger" size="sm" onClick={simulateKill} className="mt-2">
+                Simulate Kill
+              </Button>
+            </Col>
+
+            {/* Phaser game container */}
+            <Col>
+              <div
+                id="phaser-container"
+                style={{
+                  border: '2px solid #000',
+                  width: SIZE,
+                  height: SIZE,
+                }}
+              />
+            </Col>
+          </Row>
+        </Container>
     );
-}
+};
+
