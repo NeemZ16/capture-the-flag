@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Form, Button, Alert, InputGroup } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 
-const Login = () => {
-  const [username, setUsername] = useState('');
+const Login = ({ setUsername }) => {
+  const [username, setLocalUsername] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState(null);
+
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -24,6 +27,10 @@ const Login = () => {
       if (response.ok) {
         const data = await response.json();
         setMessage(data.message || "Login successful!");
+
+        //testing phaser below
+        setUsername(username);
+        navigate("/");
       } else {
         setMessage("Error during login. Please check your credentials.");
       }
@@ -49,7 +56,7 @@ const Login = () => {
                   type="text"
                   placeholder="Enter username" 
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  onChange={(e) => setLocalUsername(e.target.value)}
                   required
                 />
               </InputGroup>
