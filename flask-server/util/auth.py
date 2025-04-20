@@ -20,10 +20,6 @@ class Register(Resource):
         username = data["username"]
         password = data["password"]
 
-        print("Attempting to register user below:")
-        print("Username: ", username)
-        print("Password: ", password)
-
         valid_username, msg, status_code = validate_username(username)
         if not valid_username:
             return init_response(msg, status_code)

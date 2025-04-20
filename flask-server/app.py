@@ -277,8 +277,8 @@ CORS(app, origins=["http://localhost:8080", "*"], supports_credentials=True)
 api = Api(app)
 
 #logging setup
-os.makedirs("logs", exist_ok=True)
-file_handler = RotatingFileHandler("logs/server.log",
+os.makedirs("../logs", exist_ok=True)
+file_handler = RotatingFileHandler("../logs/server.log",
                                    maxBytes=1_000_000, backupCount=5)
 file_handler.setLevel(logging.INFO)
 file_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s: %(message)s"))
@@ -292,8 +292,18 @@ api.add_resource(Logout,   "/logout")
 api.add_resource(Me,       "/me")
 
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode=_async_mode)
-app.logger.info("Socket.IO async_mode = %s", _async_mode)
+app.logger.info("Socket.IO async_mode = %s", _async_mode) #for logging purposes
 
+@app.after_request
+def log_request(response):
+    ip     = request.remote_addr or "-"
+    method = request.method
+    path   = request.path
+    status = response.status_code
+
+    app.logger.info(f"{ip} {method} {path} {status}")
+
+    return response
 
 #Game config and helpers below
 
@@ -453,4 +463,6 @@ if __name__ == "__main__":
     extra = {}
     if _async_mode == "threading":
         extra["allow_unsafe_werkzeug"] = True
-    socketio.run(app, host="0.0.0.0", port=8000, **extra)
+
+    #can now see any requests made to the server in the console
+    socketio.run(app, host="0.0.0.0", port=8000, log_output=True, **extra)
