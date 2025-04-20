@@ -3,23 +3,14 @@ services:
     image: mongo:4.2.5
     ports:
       - '27017:27017'
-    healthcheck:
-      test: [ "CMD", "mongo", "--quiet", "127.0.0.1/test",
-              "--eval", "db.adminCommand('ping').ok" ]
-      interval: 10s
-      timeout: 5s
-      retries: 10
 
   server:
     build:
       context: .
       dockerfile: server.Dockerfile
     container_name: flask-backend
-    depends_on:
-      mongo:
-        condition: service_healthy
     environment:
-      MONGO_URL: mongodb://localhost:27017
+      MONGO_URL: mongodb://mongo:27017
       MONGO_DOCUMENT: cse312-project
       WAIT_HOSTS: mongo:27017
     ports:
