@@ -2,22 +2,25 @@ import React, { useEffect, useState, useRef } from 'react';
 import Phaser from 'phaser';
 import { io } from 'socket.io-client';
 import { Container, Row, Col, Button, ListGroup} from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 
-export default function GamePage() {
+// constants
+const GRID = 1000;      // server co‑ordinate space
+const SIZE = 600;       // canvas px
+const SCALE = SIZE / GRID;
+const COLOR = { red: 0xff0000, blue: 0x0000ff, green: 0x00ff00, magenta: 0xff00ff };
+
+export default function GamePage({ username, setUsername }) {
     const [players, setPlayers] = useState({});
     const [teamData, setTeamData] = useState({});
     const [remaining, setRemaining] = useState(0);
     const [localId, setLocalId] = useState(null);
     const [started, setStarted] = useState(false); // start game
 
+    const navigate = useNavigate(); //for redirecting to login page
     const socketRef = useRef(null);
     const gameRef = useRef(null);
 
-    // constants
-    const GRID = 1000;      // server co‑ordinate space
-    const SIZE = 600;       // canvas px
-    const SCALE = SIZE / GRID;
-    const COLOR = { red: 0xff0000, blue: 0x0000ff, green: 0x00ff00, magenta: 0xff00ff };
 
     // local cosmetic countdown
     useEffect(() => {
@@ -182,6 +185,43 @@ export default function GamePage() {
         if (id) socket.emit('kill', {targetId: id.trim()});
     }
 
+    //for log out button
+    const handleLogout = async () => {
+
+        const endpoint = 'http://localhost:8000/logout'
+    
+        try {
+          const response = await fetch(endpoint, {
+            method: 'POST',
+            credentials: 'include', //will send the auth_token cookie so backend can clear it
+            redirect: 'manual',
+          });
+    
+    
+          if (response.ok) { //backend returns plain text
+            //successful logout
+            //currently, once username is empty logout button wont show
+    
+            setUsername('')
+    
+            navigate('/')
+    
+          } else if(response.status === 400) { //cookie deleted in backend
+            const msg = await response.text();
+    
+            console.warn(msg)
+            setUsername('')
+          }else {
+            const msg = await response.text();
+    
+            console.warn('Logout failed', response.status, msg);
+          }
+        } catch (err) {
+          console.error('Logout error', err)
+        }
+    }
+
+    
     return (
         <div>
             {/* title */}
@@ -216,7 +256,20 @@ export default function GamePage() {
                     <Row>
                         {/* Sidebar with stats and controls */}
                         <Col md={3} style={{ marginRight: 20 }}>
+
+                            {/* example of how to use react state to show username of logged in player */}
+                            <div>
+                                <h2>Welcome, {username}!</h2>
+
+                                <Button variant="secondary" onClick={handleLogout}>
+                                    Logout Here
+                                </Button>
+                            </div>
+
                             <h2>Game Stats</h2>
+
+                            {/*Player list */}
+
                             <p>
                                 <strong>Time Left:</strong> {remaining}s
                             </p>

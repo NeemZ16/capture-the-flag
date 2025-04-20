@@ -267,12 +267,16 @@ from flask_restful import Api
 from logging.handlers import RotatingFileHandler
 from flask_socketio import SocketIO, emit
 
+#non websocket imports
+from util.auth import * #importing endpoints from auth.py
+
 # Flask / Socket.IO setup
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev_secret")
-CORS(app, origins="*", supports_credentials=True)
+CORS(app, origins=["http://localhost:8080", "*"], supports_credentials=True)
 api = Api(app)
 
+#logging setup
 os.makedirs("logs", exist_ok=True)
 file_handler = RotatingFileHandler("logs/server.log",
                                    maxBytes=1_000_000, backupCount=5)
@@ -281,8 +285,17 @@ file_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s: %(messag
 app.logger.setLevel(logging.INFO)
 app.logger.addHandler(file_handler)
 
+#flask REST/CRUD API endpoints
+api.add_resource(Register, "/register")
+api.add_resource(Login,    "/login")
+api.add_resource(Logout,   "/logout")
+api.add_resource(Me,       "/me")
+
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode=_async_mode)
 app.logger.info("Socket.IO async_mode = %s", _async_mode)
+
+
+#Game config and helpers below
 
 # Game state
 players = {}           # sid → {username, team, x, y, hasFlag}

@@ -1,6 +1,6 @@
 from util.database import user_collection, auth_token_collection
 from flask_restful import Resource
-from flask import request, make_response
+from flask import request, jsonify, make_response
 import re
 import bcrypt
 import uuid
@@ -19,6 +19,10 @@ class Register(Resource):
         
         username = data["username"]
         password = data["password"]
+
+        print("Attempting to register user below:")
+        print("Username: ", username)
+        print("Password: ", password)
 
         valid_username, msg, status_code = validate_username(username)
         if not valid_username:
@@ -91,15 +95,35 @@ class Logout(Resource):
         hashed_token = hashlib.sha256(auth_token.encode()).hexdigest()
 
         try:
-            auth_token_collection.delete_one({"auth_token": hashed_token})
-            res = init_response("Successfully logged out", 302)
-            res.headers["Location"] = "/"
+            result = auth_token_collection.delete_one({"auth_token": hashed_token})
+            if result.deleted_count == 0:
+                res = init_response("auth_token not found in DB", 400)
+                res.set_cookie("auth_token", max_age=0)
+
+                return res
+
+            res = init_response("Successfully logged out", 200)
             res.set_cookie("auth_token", max_age=0)
             return res
 
         except Exception as e:
             return init_response(str(e), 500)
 
+#used to ping backend to check if user is logged in
+class Me(Resource):
+
+    def get(self):
+        auth_token = request.cookies.get("auth_token")
+        if not auth_token:
+            return {"username": ""}, 200
+
+        hashed = hashlib.sha256(auth_token.encode()).hexdigest()
+        entry = auth_token_collection.find_one({"auth_token": hashed})
+        if not entry:
+            return {"username": ""}, 200
+
+        user = user_collection.find_one({"id": entry["id"]})
+        return {"username": user["username"] if user else ""}, 200
 
 def validate_pw(password):
     """
@@ -138,16 +162,17 @@ def validate_pw(password):
         msg = "Password can only contain alphanumeric characters and special characters"
         return False, msg, 401
     
-    return True
+    return True, "", 200
 
 
 def validate_username(username):
     """
     constraints
-    - only allow lowercase, uppercase characters, numbers, and underscore
-    - only allow username in range(1, 20)
+    - length between range(1, 20)
+    - only letters, digits, and underscore
+    - underscore is optional
     """
-    if not bool(re.fullmatch(r'[a-zA-Z0-9_]', username)):
+    if not bool(re.fullmatch(r'^[A-Za-z0-9_]+$', username)):
         msg = "Username can only contain alphabet characters, numbers, and underscore"
         return False, msg, 401
 
@@ -168,7 +193,7 @@ def validate_username(username):
     except Exception as e:
         return False, str(e), 500
 
-    return True
+    return True, "", 200
 
 
 def init_response(text: str, status_code: int, content_type="text/plain"):
