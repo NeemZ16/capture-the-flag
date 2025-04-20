@@ -1,4 +1,3 @@
-import Phaser from 'phaser';
 import { SCALE, COLOR } from '../../constants/gameConstants';
 
 export default class Avatar {
@@ -10,7 +9,7 @@ export default class Avatar {
     const y = data.y * SCALE;
 
     // body circle
-    this.body = scene.add.circle(0, 0, 15, COLOR[data.team] || 0xffffff);
+    this.body = scene.add.circle(0, 0, 15, COLOR[data.team] || 0xffffff); //getting run time error here
 
     // name text
     this.name = scene.add.text(-20, -30, data.username, {

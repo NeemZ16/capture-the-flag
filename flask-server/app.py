@@ -347,9 +347,16 @@ def _time_sync_loop():
 def _game_clock():
     global _game_ended
     time.sleep(GAME_DURATION)
-    _game_ended = True
-    winner, info = _decide_winner()
-    socketio.emit("game_ended", {"winner": winner, "score": info["score"]}, broadcast=True)
+
+    #now game_ended only emits if noone manually ended the game(aka being last player in lobby and disconnecting)
+    if not _game_ended:
+        _game_ended = True
+        winner, info = _decide_winner()
+        socketio.emit(
+            "game_ended",
+            {"winner": winner, "score": info["score"]},
+            broadcast=True
+        )
 
 # Socket.IO event handlers
 @socketio.on("connect")
@@ -390,10 +397,33 @@ def _on_connect():
 def _on_disconnect():
     sid = request.sid
     key = sid_map.pop(sid, None)
+
+    # only act if we actually had a playerKey mapped
     if key and key in players:
+        # remove them from the game
+        players.pop(key, None)
         emit("player_left",
-             {"playerId": key, "username": players[key]["username"]},
+             {"playerId": key, "username": players.get(key, {}).get("username")},
              broadcast=True)
+
+        # if nobody’s left, tear down the round
+        if len(players) == 0:
+            global _game_ended, _game_start_ts, team_data
+            _game_ended    = True
+            _game_start_ts = None
+            # reset all scores & flags to their bases
+            team_data = {
+                "red":     {"score": 5, "base": {"x": 100, "y": 100}, "flagLocation": {"x": 100, "y": 100}},
+                "blue":    {"score": 5, "base": {"x": 900, "y": 100}, "flagLocation": {"x": 900, "y": 100}},
+                "green":   {"score": 5, "base": {"x": 100, "y": 900}, "flagLocation": {"x": 100, "y": 900}},
+                "magenta": {"score": 5, "base": {"x": 900, "y": 900}, "flagLocation": {"x": 900, "y": 900}},
+            }
+
+            # clear any leftover socket→player mappings
+            sid_map.clear()
+
+            # notify any connected UIs to destroy their Phaser instance
+            socketio.emit("game_destroyed", broadcast=True)
 
 @socketio.on("move")
 def _on_move(data):

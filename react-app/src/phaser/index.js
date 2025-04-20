@@ -1,6 +1,4 @@
 import Phaser from 'phaser';
-import BootScene     from './scenes/BootScene'
-import MainMenuScene from './scenes/MainMenuScene'
 import GameScene     from './scenes/GameScene'
 import { SIZE } from '../constants/gameConstants';
 
@@ -14,6 +12,6 @@ export function startGame(containerId) {
       default: 'arcade',
       arcade: { gravity: { y: 0 }, debug: false },
     },
-    scene: [ BootScene, MainMenuScene, GameScene ]
+    scene: [ GameScene ]
   });
 }
