@@ -2,15 +2,17 @@ import { useEffect, useState } from 'react';
 import socketService from '../services/socketService';
 import { SOCKET_EVENTS } from '../constants/gameConstants';
 
-export default function useSocket() {
+export default function useSocket(username) { // ← MOD add param
   const [players,  setPlayers ] = useState({});
   const [teamData, setTeamData] = useState({});
   const [remaining, setRemaining] = useState(0);
   const [localId,  setLocalId ] = useState(null);
 
   useEffect(() => {
+    if (!username) return;  // ← MOD wait for user
     const stored = localStorage.getItem('playerId') || null;
-    const socket = socketService.connect(stored);
+    // send storedId **and** username during handshake
+    const socket = socketService.connect(stored, username); 
 
     socket.on(SOCKET_EVENTS.INIT, d => {
       localStorage.setItem('playerId', d.playerId);
@@ -57,7 +59,7 @@ export default function useSocket() {
     return () => {
       socketService.disconnect();
     };
-  }, []);
+  }, [username]); // ← MOD add dep
 
   return { players, teamData, remaining, localId };
 }

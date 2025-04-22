@@ -358,40 +358,48 @@ def _game_clock():
             broadcast=True
         )
 
-# Socket.IO event handlers
+
 @socketio.on("connect")
 def _on_connect():
-    sid       = request.sid
-    playerKey = request.args.get("playerKey") or sid          # <── NEW
-    old_id    = playerKey in players
+    sid        = request.sid
+    playerKey  = request.args.get("playerKey") or sid
+    username   = request.args.get("username")             # get the real username
 
-    if old_id:                           # ▸ welcome back – re‑attach sid
-        sid_map[sid] = playerKey         #   remember the new transport id
-        app.logger.info("Re‑connect: %s keeps same team %s",
-                        playerKey, players[playerKey]["team"])
+    # If no username was supplied, refuse the handshake
+    if not username:                                     
+        app.logger.warning("Rejected connection without username (sid=%s)", sid)  # ← MOD
+        return False                                      
 
-    else:                                # ▸ brand‑new player
-        team   = random.choice(list(team_data.keys()))
+    old_id = playerKey in players
+
+    if old_id:                                            # reconnect – keep same data
+        sid_map[sid] = playerKey
+        app.logger.info("Re‑connect: %s (user=%s)", playerKey, players[playerKey]["username"])
+    else:                                                 # brand‑new player
+        team = random.choice(list(team_data.keys()))
         bx, by = team_data[team]["base"].values()
         players[playerKey] = {
-            "username": f"Guest_{''.join(random.choices(string.ascii_uppercase, k=5))}",
-            "team": team,
-            "x": bx + random.randint(-30, 30),
-            "y": by + random.randint(-30, 30),
-            "hasFlag": None,
+            "username": username,                         # no more Guest users
+            "team"    : team,
+            "x"       : bx + random.randint(-30, 30),
+            "y"       : by + random.randint(-30, 30),
+            "hasFlag" : None,
         }
-        socketio.emit("player_joined",
-                      {"playerId": playerKey, **players[playerKey]},
-                      broadcast=True, include_self=False)
+        socketio.emit(
+            "player_joined",
+            {"playerId": playerKey, **players[playerKey]},
+            broadcast=True, include_self=False
+        )
         sid_map[sid] = playerKey
 
     _start_timers_if_needed()
     emit("init", {
         "playerId": playerKey,
-        "players": players,
+        "players" : players,
         "teamData": team_data,
-        "remainingTime": _remaining_time()
+        "remainingTime": _remaining_time(),
     })
+
 
 @socketio.on("disconnect")
 def _on_disconnect():
@@ -401,10 +409,10 @@ def _on_disconnect():
     # only act if we actually had a playerKey mapped
     if key and key in players:
         # remove them from the game
-        players.pop(key, None)
-        emit("player_left",
-             {"playerId": key, "username": players.get(key, {}).get("username")},
-             broadcast=True)
+        left_player = players.pop(key)                    # capture before pop
+        socketio.emit("player_left",
+                      {"playerId": key, "username": left_player["username"]},
+                      broadcast=True)
 
         # if nobody’s left, tear down the round
         if len(players) == 0:
@@ -425,16 +433,21 @@ def _on_disconnect():
             # notify any connected UIs to destroy their Phaser instance
             socketio.emit("game_destroyed", broadcast=True)
 
+
 @socketio.on("move")
 def _on_move(data):
-    sid = request.sid
-    if sid not in players:
+    sid       = request.sid
+    playerKey = sid_map.get(sid)                          # look‑up real key
+    if not playerKey or playerKey not in players:         
         return
-    p = players[sid]
+    p = players[playerKey]
     p["x"] = max(0, min(1000, p["x"] + data.get("dx", 0)))
     p["y"] = max(0, min(1000, p["y"] + data.get("dy", 0)))
-    _check_flag_logic(sid)
-    socketio.emit("player_moved", {"playerId": sid, **p}, broadcast=True)
+    _check_flag_logic(playerKey)                         
+    socketio.emit("player_moved",
+                  {"playerId": playerKey, **p},           
+                  broadcast=True)
+
 
 @socketio.on("kill")
 def _on_kill(data):
