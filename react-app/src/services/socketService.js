@@ -17,7 +17,7 @@ class SocketService {
       transports: ['websocket'],
       // pass both pieces of info so the backend can skip “Guest” names
       query: {                                                       
-        playerKey: existingPlayerId || undefined,                        
+        playerKey: existingPlayerId || "",                        
         username,                                                           
       },
       withCredentials: true,                                                 // keep auth cookie

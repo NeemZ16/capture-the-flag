@@ -128,7 +128,7 @@ export default function GamePage({ username, setUsername }) {
                 //currently, once username is empty logout button wont show
 
                 setUsername('');
-
+                localStorage.removeItem('playerId')
                 navigate('/');
 
             } else if (response.status === 400) { //cookie deleted in backend
