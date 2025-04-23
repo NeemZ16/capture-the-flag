@@ -485,22 +485,27 @@ def _check_flag_logic(sid):
         if team != p["team"] and close_to_base and info["flagLocation"]:
             info["score"] -= 1
             info["flagLocation"] = None
-            p["hasFlag"] = team
+            if p["hasFlag"] is not None:
+                if team not in p["hasFlag"]:
+                    p["hasFlag"].append(team)
+            else:
+                p["hasFlag"] = [team]
             socketio.emit("flag_taken", {
                 "playerId": sid, "flagTeam": team, "newScore": info["score"]
             }, broadcast=True)
 
         # deliver a captured flag
         elif team == p["team"] and close_to_base and p["hasFlag"]:
-            enemy_flag = p["hasFlag"]
-            team_data[p["team"]]["score"] += 1
-            team_data[enemy_flag]["flagLocation"] = dict(team_data[enemy_flag]["base"])
-            p["hasFlag"] = None
-            socketio.emit("flag_scored", {
-                "playerId": sid, "playerTeam": p["team"],
-                "scoredFlag": enemy_flag,
-                "teamScore": team_data[p['team']]['score']
-            }, broadcast=True)
+            enemy_flags = p["hasFlag"]
+            for enemy_flag in enemy_flags:
+                team_data[p["team"]]["score"] += 1
+                team_data[enemy_flag]["flagLocation"] = dict(team_data[enemy_flag]["base"])
+                p["hasFlag"] = None
+                socketio.emit("flag_scored", {
+                    "playerId": sid, "playerTeam": p["team"],
+                    "scoredFlag": enemy_flag,
+                    "teamScore": team_data[p['team']]['score']
+                }, broadcast=True)
 
 if __name__ == "__main__":
     extra = {}
