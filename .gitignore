@@ -62,4 +62,5 @@ Thumbs.db
 .idea/
 
 # --- Chris ----
-chris_readme.md
+README_chris.md
+private_key.pem

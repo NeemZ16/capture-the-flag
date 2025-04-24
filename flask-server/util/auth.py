@@ -20,7 +20,9 @@ class Register(Resource):
         username = data["username"]
         password = data["password"]
 
-        valid_username, msg, status_code = validate_username(username)
+        safe_username = html.escape(username)
+
+        valid_username, msg, status_code = validate_username(safe_username)
         if not valid_username:
             return init_response(msg, status_code)
 
@@ -168,6 +170,7 @@ def validate_username(username):
     - only letters, digits, and underscore
     - underscore is optional
     """
+
     if not bool(re.fullmatch(r'^[A-Za-z0-9_]+$', username)):
         msg = "Username can only contain alphabet characters, numbers, and underscore"
         return False, msg, 401
