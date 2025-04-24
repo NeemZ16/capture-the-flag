@@ -21,16 +21,17 @@ class Register(Resource):
         password = data["password"]
 
         safe_username = html.escape(username)
+        safe_password = html.escape(password)
 
         valid_username, msg, status_code = validate_username(safe_username)
         if not valid_username:
             return init_response(msg, status_code)
 
-        valid_pw, msg, status_code = validate_pw(password)
+        valid_pw, msg, status_code = validate_pw(safe_password)
         if not valid_pw:
             return init_response(msg, status_code)
 
-        hashed_pw = bcrypt.hashpw(password.encode(), salt)
+        hashed_pw = bcrypt.hashpw(safe_password.encode(), salt)
 
         id = str(uuid.uuid4())
 
@@ -52,8 +53,9 @@ class Login(Resource):
         password = data["password"]
 
         safe_username = html.escape(username)
+        safe_password = html.escape(password)
         
-        hashed_pw = bcrypt.hashpw(password.encode(), salt)
+        hashed_pw = bcrypt.hashpw(safe_password.encode(), salt)
 
         user_info = user_collection.find_one({"username": safe_username, "password": hashed_pw})
 
