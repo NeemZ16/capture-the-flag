@@ -15,13 +15,23 @@ body {
 }
 
 input {
+    display: block;
     padding: 5px;
     font-size: 25px;
     font-family: "Jersey 10", sans-serif;
     border: 3px solid #000;
+    margin-bottom: 15px;
 }
 
 input:focus-visible {
     outline: none;
     border-color: #FFC20C;
+}
+
+input.success {
+    border-color: #79e679;
+}
+
+input.error {
+    border-color: #8b0303;
 }
