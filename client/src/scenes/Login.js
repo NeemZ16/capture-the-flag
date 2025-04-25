@@ -6,6 +6,14 @@ export class Login extends BaseScene {
     }
 
     create() {
+        // check if logged in
+        this.isLoggedIn().then(([isLoggedIn, username]) => {
+            if (isLoggedIn) {
+                this.game.username = username;
+                this.scene.start('Game');
+            }
+        });
+
         this.uiContainer = this.add.container(this.dimensions.width / 2, this.dimensions.height / 2).setInteractive();
         const logo = this.add.image(0, -100, 'logo')
             .setInteractive({ cursor: 'pointer' })
@@ -47,13 +55,14 @@ export class Login extends BaseScene {
             isValid = true;
         }
 
+        // dont make api call if basic validation fails
         if (!isValid) { this.showMessage(isValid, msg); return }
 
         // fetch call to register endpoint with form values
         const url = import.meta.env.VITE_API_URL + "login";
         fetch(url, {
             method: 'POST',
-            credentials: 'include', //will include the auth_token cookie
+            credentials: 'include', // will include the auth_token cookie
             headers: {
                 'Content-Type': 'application/json',
             },
@@ -64,7 +73,8 @@ export class Login extends BaseScene {
                 if (status === 200) {
                     this.showMessage(isValid, text);
                     setTimeout(() => {
-                        this.scene.start('Game');
+                        // this.scene.start('Game');
+                        window.location.reload();
                     }, 1000);
                 } else {
                     // backend error message

@@ -6,6 +6,10 @@ export class Register extends BaseScene {
     }
 
     create() {
+        if (this.game.username) {
+            this.scene.start('Game');
+        }
+
         this.uiContainer = this.add.container(this.dimensions.width / 2, this.dimensions.height / 2).setInteractive();
         const logo = this.add.image(0, -100, 'logo')
             .setInteractive({ cursor: 'pointer' })
@@ -51,6 +55,7 @@ export class Register extends BaseScene {
             isValid = true;
         }
 
+        // dont make api call if basic validation fails
         if (!isValid) { this.showMessage(isValid, msg); return }
 
         // fetch call to register endpoint with form values
@@ -66,13 +71,13 @@ export class Register extends BaseScene {
             .then((res) => res.text().then((text) => ({ status: res.status, text })))
             .then(({ status, text }) => {
                 if (status === 200) {
-                    this.showMessage(isValid, text);
+                    this.showMessage(true, text);
                     setTimeout(() => {
-                        this.scene.start('Game');
+                        this.scene.start('Login');
                     }, 1000);
                 } else {
                     // backend error message
-                    this.showMessage(!isValid, text);
+                    this.showMessage(false, text);
                 }
             })
             .catch((err) => {

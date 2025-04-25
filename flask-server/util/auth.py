@@ -100,7 +100,7 @@ class Logout(Resource):
         except Exception as e:
             return init_response(str(e), 500)
 
-#used to ping backend to check if user is logged in
+# used to ping backend to check if user is logged in
 class Me(Resource):
 
     def get(self):

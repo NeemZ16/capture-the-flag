@@ -1,6 +1,8 @@
-import { Scene } from 'phaser';
+// import { Scene } from 'phaser';
 
-export class Preloader extends Scene {
+import { BaseScene } from "./BaseScene";
+
+export class Preloader extends BaseScene {
     constructor() {
         super('Preloader');
     }
@@ -33,10 +35,15 @@ export class Preloader extends Scene {
     create() {
         //  When all the assets have loaded, it's often worth creating global objects here that the rest of the game can use.
         //  For example, you can define global animations here, so we can use them in other scenes.
+        this.isLoggedIn().then(([isLoggedIn, username]) => {
+            console.log("Logged in:", isLoggedIn, "as", username);
 
-        //  Move to the MainMenu. You could also swap this for a Scene Transition, such as a camera fade.
-        this.scene.start('MainMenu');
-
-        // TODO: check if logged in
+            if (isLoggedIn) {
+                this.game.username = username;
+                this.scene.start('Game');
+            } else {
+                this.scene.start('MainMenu');
+            }
+        });
     }
 }

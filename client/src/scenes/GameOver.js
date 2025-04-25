@@ -13,7 +13,7 @@ export class GameOver extends BaseScene {
             this.dimensions.width / 2, 
             this.dimensions.height / 2, 
             'pixel', 
-            'game over'
+            `game over player ${this.game.username}`
         ).setOrigin(0.5).setTint(0xff0000);
         
         this.input.once('pointerdown', () => {

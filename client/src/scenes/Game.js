@@ -37,7 +37,7 @@ export class Game extends BaseScene {
 
     create() {
         // this.createBg();
-        this.gameText = this.add.bitmapText(this.dimensions.width / 2, this.dimensions.height / 2, 'pixel', 'game').setOrigin(0.5);
+        this.gameText = this.add.bitmapText(this.dimensions.width / 2, this.dimensions.height / 2, 'pixel', `game page player ${this.game.username}`).setOrigin(0.5);
 
         this.input.once('pointerdown', () => {
             this.scene.start('GameOver');

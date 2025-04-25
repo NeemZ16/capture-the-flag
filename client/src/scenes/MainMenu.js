@@ -4,8 +4,12 @@ export class MainMenu extends BaseScene {
     constructor() {
         super('MainMenu');
     }
-
+    
     create() {
+        if (this.game.username) {
+            this.scene.start('Game');
+        }
+
         this.uiContainer = this.add.container(this.dimensions.width / 2, this.dimensions.height / 2);
 
         const logo = this.add.image(0, -100, 'logo');

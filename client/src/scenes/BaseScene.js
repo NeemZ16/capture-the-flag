@@ -42,20 +42,41 @@ export class BaseScene extends Scene {
             fontSize: '25px',
             color: '#000000'
         })
-        .setPadding(10, 5)
-        .setOrigin(0.5)
-        .setInteractive({ cursor: 'pointer' });
-    
+            .setPadding(10, 5)
+            .setOrigin(0.5)
+            .setInteractive({ cursor: 'pointer' });
+
         btn.on('pointerdown', action);
-    
+
         btn.on('pointerover', () => {
             btn.setStyle({ backgroundColor: '#FFB000' });
         });
-    
+
         btn.on('pointerout', () => {
             btn.setStyle({ backgroundColor: '#FFC20C' });
         });
-    
+
         return btn;
+    }
+
+    /**
+     * Asynchronous function to ping /me and check if logged in.
+     * Called in preloader to automatically change from main menu to game.
+     * @returns promise with isLoggedIn and username game vars
+     */
+    isLoggedIn() {
+        // check if logged in
+        const currentUserURL = import.meta.env.VITE_API_URL + "me";
+        return fetch(currentUserURL, {
+            method: 'GET',
+            credentials: 'include'
+        })
+            .then((res) => res.json())
+            .then((data) => {
+                this.game.username = data.username || "";
+                this.game.isLoggedIn = !!data.username;
+                return [this.game.isLoggedIn, this.game.username];
+            })
+            .catch(err => console.log(err))
     }
 }
