@@ -61,20 +61,15 @@ class Login(Resource):
         auth_token = secrets.token_hex(16)
         hashed_token = hashlib.sha256(auth_token.encode()).hexdigest()
 
+        # expire as int enough to set cookie
+        expire = 3600
         try:
             auth_token_collection.insert_one({"id": user_info["id"], "auth_token": hashed_token})
         except Exception as e:
             return init_response(str(e), 500)
 
-        expire = 3600
-        current_time = datetime.now()
-        expiration_time = current_time + timedelta(seconds=expire)
-
-        current_time = datetime.now()
-        max_age = int((expiration_time - current_time).total_seconds())
-
         res = init_response("Login Successful!", 200)
-        res.set_cookie("auth_token", auth_token, httponly=True, max_age=max_age, path="/")
+        res.set_cookie("auth_token", auth_token, httponly=True, max_age=expire, path="/")
 
         return res
 
