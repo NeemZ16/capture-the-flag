@@ -60,25 +60,40 @@ export class Game extends BaseScene {
     }
 
     update() {
-        const speed = 200;
+        // SET MOVEMENT OF PLAYER SO THERE IS RESIDUAL VELOCITY ON MOVE
+        // DIAGONALS ARE NORMALIZED TO PREVENT SPEEDUP
 
-        if (this.cursors.left.isDown) {
-            this.player.body.setVelocityX(-speed);
-        } else if (this.cursors.right.isDown) {
-            this.player.body.setVelocityX(speed);
-        } 
-        // else {
-        //     this.player.body.setVelocityX(0);
-        // }
-
-        if (this.cursors.up.isDown) {
-            this.player.body.setVelocityY(-speed);
-        } else if (this.cursors.down.isDown) {
-            this.player.body.setVelocityY(speed);
-        } 
-        // else {
-        //     this.player.body.setVelocityY(0);
-        // }
+        const accel = 600;
+        let dirX = 0;
+        let dirY = 0;
+    
+        if (this.cursors.left.isDown) dirX -= 1;
+        if (this.cursors.right.isDown) dirX += 1;
+        if (this.cursors.up.isDown) dirY -= 1;
+        if (this.cursors.down.isDown) dirY += 1;
+    
+        const len = Math.hypot(dirX, dirY);
+    
+        if (len > 0) {
+            // Normalize direction
+            dirX /= len;
+            dirY /= len;
+    
+            this.player.body.setAcceleration(dirX * accel, dirY * accel);
+        } else {
+            this.player.body.setAcceleration(0, 0);
+        }
+    
+        // Optionally clamp total velocity (not just X/Y separately)
+        const body = this.player.body;
+        const maxSpeed = 200;
+        const currentSpeed = Math.hypot(body.velocity.x, body.velocity.y);
+    
+        if (currentSpeed > maxSpeed) {
+            // Rescale to max speed while keeping direction
+            const scale = maxSpeed / currentSpeed;
+            body.setVelocity(body.velocity.x * scale, body.velocity.y * scale);
+        }
     }
 
     onResize() {
