@@ -38,7 +38,7 @@ export class Game extends BaseScene {
         this.player.setPosition(this.worldSize / 2, this.worldSize / 2);
         this.physics.world.enable(this.player);
         this.player.body.setCircle(radius);
-        this.player.body.setDrag(200, 200);
+        this.player.body.setDrag(100, 100);
 
         // follow player
         this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
@@ -60,7 +60,7 @@ export class Game extends BaseScene {
     }
 
     update() {
-        // SET MOVEMENT OF PLAYER SO THERE IS RESIDUAL VELOCITY ON MOVE
+        // SET MOVEMENT OF PLAYER SO THERE IS RESIDUAL VELOCITY ON MOVEMENT
         // DIAGONALS ARE NORMALIZED TO PREVENT SPEEDUP
 
         const accel = 600;
