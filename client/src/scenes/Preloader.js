@@ -44,6 +44,9 @@ export class Preloader extends BaseScene {
             } else {
                 this.scene.start('MainMenu');
             }
+        }).catch((err) => {
+            this.add.bitmapText(this.dimensions.width / 2, this.dimensions.height / 2, 'pixel', err)
+            .setTint(0x8d0303)
         });
     }
 }
