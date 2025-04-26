@@ -5,43 +5,80 @@ export class Game extends BaseScene {
         super('Game');
     }
 
-    // createBg() {
-    //     const scaleFactor = 3;
-    //     const tileSize = 16 * scaleFactor;
-        
-    //     // create water background
-    //     this.add.tileSprite(0, 0, this.dimensions.width, this.dimensions.height, 'waterSprites', 24)
-    //         .setOrigin(0)
-    //         .setTileScale(scaleFactor);
-        
-    //     // Add random tiles on top
-    //     const cols = Math.ceil(this.dimensions.width / tileSize);
-    //     const rows = Math.ceil(this.dimensions.height / tileSize);
-    //     const frames = [44, 45, 46, 47, 56, 57, 58, 59, 68, 69, 70, 71, 108, 109, 110, 111, 112, 113]; // The alternate tiles to sprinkle in
+    createBg() {
+        const gridSize = this.worldSize;
+        const cellSize = 50;
 
-    //     for (let y = 0; y < rows; y++) {
-    //         for (let x = 0; x < cols; x++) {
-    //             const baseTiles = [43, 55, 67]
-    //             if (Math.random() < 0.05) {
-    //                 // replace base with decor frame
-    //                 const frame = Phaser.Utils.Array.GetRandom(frames);
-    //                 this.add.sprite(x * tileSize, y * tileSize, 'waterSprites', frame).setOrigin(0).setScale(scaleFactor);
-    //             } else if (Math.random() < 0.6) {
-    //                 // replace base blank with base textured
-    //                 const frame = Phaser.Utils.Array.GetRandom(baseTiles);
-    //                 this.add.sprite(x * tileSize, y * tileSize, 'waterSprites', frame).setOrigin(0).setScale(scaleFactor);
-    //             }
-    //         }
-    //     }
-    // }
+        this.cameras.main.setBackgroundColor(0x1e1e1e);
+        this.cameras.main.setBounds(0, 0, this.worldSize, this.worldSize);
+        this.physics.world.setBounds(0, 0, this.worldSize, this.worldSize);
+
+        const graphics = this.add.graphics();
+        graphics.lineStyle(1, 0xcccccc, 0.3);
+
+        for (let x = 0; x <= gridSize; x += cellSize) {
+            graphics.lineBetween(x, 0, x, gridSize);
+        }
+
+        for (let y = 0; y <= gridSize; y += cellSize) {
+            graphics.lineBetween(0, y, gridSize, y);
+        }
+
+        graphics.setDepth(-1);
+    }
+
+    createPlayer() {
+        // create player object with circle
+        const radius = 20;
+        this.player = this.add.graphics();
+        this.player.fillStyle(0xff0000, 1); // Red color, full opacity
+        this.player.fillCircle(radius, radius, radius); // Draw circle at (0, 0) with radius 50
+
+        // set player position and physics
+        this.player.setPosition(this.worldSize / 2, this.worldSize / 2);
+        this.physics.world.enable(this.player);
+        this.player.body.setCircle(radius);
+        this.player.body.setDrag(200, 200);
+
+        // follow player
+        this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
+
+        // prevent the player from moving off the screen (world bounds)
+        this.player.body.setCollideWorldBounds(true);
+    }
 
     create() {
-        // this.createBg();
-        this.gameText = this.add.bitmapText(this.dimensions.width / 2, this.dimensions.height / 2, 'pixel', `game page player ${this.game.username}`).setOrigin(0.5);
+        this.worldSize = 2000;
+        this.createBg();
+        this.createPlayer();
 
-        this.input.once('pointerdown', () => {
-            this.scene.start('GameOver');
-        });
+        this.cursors = this.input.keyboard.createCursorKeys();
+
+        // this.input.once('pointerdown', () => {
+        //     this.scene.start('GameOver');
+        // });
+    }
+
+    update() {
+        const speed = 200;
+
+        if (this.cursors.left.isDown) {
+            this.player.body.setVelocityX(-speed);
+        } else if (this.cursors.right.isDown) {
+            this.player.body.setVelocityX(speed);
+        } 
+        // else {
+        //     this.player.body.setVelocityX(0);
+        // }
+
+        if (this.cursors.up.isDown) {
+            this.player.body.setVelocityY(-speed);
+        } else if (this.cursors.down.isDown) {
+            this.player.body.setVelocityY(speed);
+        } 
+        // else {
+        //     this.player.body.setVelocityY(0);
+        // }
     }
 
     onResize() {
@@ -49,6 +86,5 @@ export class Game extends BaseScene {
             this.dimensions.width / 2,
             this.dimensions.height / 2
         );
-        // this.createBg();
     }
 }
