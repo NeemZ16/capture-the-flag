@@ -60,9 +60,81 @@ export class Game extends BaseScene {
     connectWS() {
         // dont create new if exists
         if (this.ws) return this.ws;
-        this.ws = webSocketService.init();
-        console.log("WS IN GAME CONNECT", this.ws)
+        this.ws = webSocketService;
+        const stored = localStorage.getItem('playerId') || null;
+        console.log("GAME USERNAME:", this.game.username);
+        this.ws.init(stored, this.game.username);
+
+        this.ws.on('init', d => {
+            localStorage.setItem('playerId', d.playerId);
+            console.log("init called");
+        })
     }
+
+    /*
+    [
+    "init",
+    {
+        "playerId": "QnJvAfezNsFl1q2nAAAD",
+        "players": {
+            "QnJvAfezNsFl1q2nAAAD": {
+                "username": "a",
+                "team": "blue",
+                "x": 900,
+                "y": 121,
+                "hasFlag": null
+            }
+        },
+        "teamData": {
+            "red": {
+                "score": 5,
+                "base": {
+                    "x": 100,
+                    "y": 100
+                },
+                "flagLocation": {
+                    "x": 100,
+                    "y": 100
+                }
+            },
+            "blue": {
+                "score": 5,
+                "base": {
+                    "x": 900,
+                    "y": 100
+                },
+                "flagLocation": {
+                    "x": 900,
+                    "y": 100
+                }
+            },
+            "green": {
+                "score": 5,
+                "base": {
+                    "x": 100,
+                    "y": 900
+                },
+                "flagLocation": {
+                    "x": 100,
+                    "y": 900
+                }
+            },
+            "magenta": {
+                "score": 5,
+                "base": {
+                    "x": 900,
+                    "y": 900
+                },
+                "flagLocation": {
+                    "x": 900,
+                    "y": 900
+                }
+            }
+        },
+        "remainingTime": 599
+    }
+]
+    */
 
     create() {
         this.worldSize = 2000;
