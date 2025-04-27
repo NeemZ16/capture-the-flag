@@ -35,6 +35,7 @@ export class Preloader extends BaseScene {
     create() {
         //  When all the assets have loaded, it's often worth creating global objects here that the rest of the game can use.
         //  For example, you can define global animations here, so we can use them in other scenes.
+        
         this.isLoggedIn().then(([isLoggedIn, username]) => {
             console.log("Logged in:", isLoggedIn, "as", username);
 
@@ -46,7 +47,7 @@ export class Preloader extends BaseScene {
             }
         }).catch((err) => {
             this.add.bitmapText(this.dimensions.width / 2, this.dimensions.height / 2, 'pixel', err)
-            .setTint(0x8d0303)
+                .setTint(0x8d0303)
         });
     }
 }
