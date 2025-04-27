@@ -33,19 +33,28 @@ export class Game extends BaseScene {
     }
 
     /**
-     * Creates red player object at the center of the world
+     * Creates player object with username above it
      */
-    createPlayer() {
-        const playerColor = 0xff0000;
+    createPlayer(x=this.worldSize / 2, y=this.worldSize / 2, username = this.game.username, playerColor=0xff0000) {
+        // TODO: remove default values after ws good
+        // create player container
+        this.player = this.add.container(x, y);
 
         // create player object with circle
         const radius = 20;
-        this.player = this.add.graphics();
-        this.player.fillStyle(playerColor, 1); // Red color, full opacity
-        this.player.fillCircle(radius, radius, radius); // Draw circle at (0, 0) with radius 50
+        this.playerSprite = this.add.graphics();
+        this.playerSprite.fillStyle(playerColor, 1); // Red color, full opacity
+        this.playerSprite.fillCircle(radius, radius, radius);
+
+        // add player to player container
+        this.player.add(this.playerSprite);
+
+        // create player name centered over sprite
+        this.playerName = this.add.bitmapText(radius, -radius, 'pixel', username, 12).setOrigin(0.5);
+        this.player.add(this.playerName);
 
         // set player position and physics
-        this.player.setPosition(this.worldSize / 2 - radius, this.worldSize / 2 - radius);
+        this.player.setPosition(x, y);
         this.physics.world.enable(this.player);
         this.player.body.setCircle(radius);
         this.player.body.setDrag(100, 100);
@@ -63,7 +72,7 @@ export class Game extends BaseScene {
         this.ws = webSocketService;
         const stored = localStorage.getItem('playerId') || null;
         console.log("GAME USERNAME:", this.game.username);
-        this.ws.init(stored, this.game.username);
+        this.ws.init(stored, this.game.username, this.worldSize);
 
         this.ws.on('init', d => {
             localStorage.setItem('playerId', d.playerId);
@@ -140,7 +149,7 @@ export class Game extends BaseScene {
         this.worldSize = 2000;
         this.createBg();
         this.createPlayer();
-        this.connectWS();
+        // this.connectWS();
 
         this.cursors = this.input.keyboard.createCursorKeys();
     }
