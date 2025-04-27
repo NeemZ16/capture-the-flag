@@ -37,6 +37,7 @@ export class Game extends BaseScene {
      */
     createPlayer(x=this.worldSize / 2, y=this.worldSize / 2, username = this.game.username, playerColor=0xff0000) {
         // TODO: remove default values after ws good
+        // TODO: think about how other players will be handled
         // create player container
         this.player = this.add.container(x, y);
 
@@ -69,9 +70,10 @@ export class Game extends BaseScene {
     connectWS() {
         // dont create new if exists
         if (this.ws) return this.ws;
+        
         this.ws = webSocketService;
         const stored = localStorage.getItem('playerId') || null;
-        console.log("GAME USERNAME:", this.game.username);
+        // console.log("GAME USERNAME:", this.game.username);
         this.ws.init(stored, this.game.username, this.worldSize);
 
         this.ws.on('init', d => {
