@@ -1,0 +1,47 @@
+# game planning
+- infinite game
+- scores individual based on how many flags scored
+- team scores are totals of individual scores
+  - if player with 20 flags leaves, then team score -20
+- on contact, if has flag and different color then flag stolen and player returned to base
+  - if player doesn't have flag or is same color nothing happens
+- on join, player added to team with least number of players
+- flag positions are shown to all users with arrows
+
+# ws event planning
+- init - on connect, initialize websocket connection
+  - client
+    - send username
+  - server
+    - update players dict
+    - update team data for team color
+    - send spawn point (x, y), color, players dict (position, color, score), team data object (color -> (numPlayers, total))
+- player-joined
+  - client
+    - send username
+  - server
+    - update players dict
+    - update team data for team color
+    - send spawn point (x, y), color, players dict (position, color, score), team data object (color -> (numPlayers, total))
+- player-moved
+  - client
+    - send username, position
+  - server
+    - broadcast username, position
+- player-left (disconnect)
+  - client
+    - send username
+  - server
+    - remove player from player dict
+    - update team data score and num players
+- flag-taken
+  - client
+    - send username, flagColor
+  - server
+    - update playerDict w hasFlag
+    - broadcast flagPosition, flagColor
+- flag-scored
+  - client
+    - send username, flagColor
+  - server
+    - update playerDict, team data w score
