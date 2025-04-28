@@ -20,7 +20,7 @@ const Register = () => {
       return;
     }
 
-    const apiUrl = process.env.REACT_APP_API_URL + "me";
+    const apiUrl = process.env.REACT_APP_API_URL + "register";
     try {
       const response = await fetch(apiUrl, {
         method: 'POST',
