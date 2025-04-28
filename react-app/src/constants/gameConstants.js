@@ -19,6 +19,9 @@ export const SOCKET_EVENTS = {
   TIME_SYNC:    'time_sync',
   GAME_ENDED:   'game_ended',
   MOVE:         'move',
+
   KILL:         'kill',
+  PLAYER_KILLED: 'player_killed',
+
   GAME_DESTROYED: 'game_destroyed',
 };

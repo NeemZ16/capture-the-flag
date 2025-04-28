@@ -25,6 +25,7 @@ export default function GamePage({ username, setUsername }) {
         let pollTimer;
 
         if (started) {
+            window.localId = localId;
             phaserRef.current = startGame('phaser-container');
 
             pollTimer = setInterval(() => {

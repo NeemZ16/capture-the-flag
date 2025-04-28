@@ -10,6 +10,7 @@ export default class GameScene extends Phaser.Scene {
     this.avatars    = {};
     this.baseFlags  = {};
     this.cool       = 0;
+    this.frozen    = false;
   }
 
   create() {
@@ -21,6 +22,18 @@ export default class GameScene extends Phaser.Scene {
     // input
     this.cursors = this.input.keyboard.createCursorKeys();
     this.keys    = this.input.keyboard.addKeys('W,A,S,D');
+
+    // kill/steal key (F)
+    this.killKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F);
+    this.killKey.on('down', () => {
+      if (!this.frozen) socketService.emit(SOCKET_EVENTS.KILL, {});    
+    });
+
+    // Listen for freeze from server
+    socketService.socket.on(SOCKET_EVENTS.PLAYER_FROZEN, ({duration}) => {
+      this.frozen = true;
+      this.time.delayedCall(duration*1000, ()=> this.frozen=false);
+    });
 
     // make canvas focusable for keyboard
     this.game.canvas.setAttribute('tabindex', '0');
@@ -35,6 +48,8 @@ export default class GameScene extends Phaser.Scene {
     this.cool += dt;
     if (this.cool < 30) return;
     this.cool = 0;
+
+    if (this.frozen) return;   // no movement while frozen
 
     let dx = 0, dy = 0;
     const sp = 5;

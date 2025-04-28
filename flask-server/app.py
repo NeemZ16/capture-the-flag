@@ -1,4 +1,4 @@
-import os, logging, random, string, time, threading
+import os, logging, random, string, time, threading, math
 from typing import Optional
 
 # Try to enable eventlet if it is installable on this runtime
@@ -110,8 +110,11 @@ def _game_clock():
 @socketio.on("connect")
 def _on_connect():
     sid        = request.sid
-    playerKey  = request.args.get("playerKey") or sid
+    rawKey     = request.args.get("playerKey")
+
+    playerKey = rawKey if rawKey in players else sid
     username   = request.args.get("username")             # get the real username
+
 
     # If no username was supplied, refuse the handshake
     if not username:                                     
@@ -132,6 +135,7 @@ def _on_connect():
             "x"       : bx + random.randint(-30, 30),
             "y"       : by + random.randint(-30, 30),
             "hasFlag" : None,
+            "frozen_until": 0.0
         }
         socketio.emit(
             "player_joined",
@@ -188,6 +192,11 @@ def _on_move(data):
     playerKey = sid_map.get(sid)                          # look‑up real key
     if not playerKey or playerKey not in players:         
         return
+    
+    now = time.time() 
+    if players[playerKey]["frozen_until"] > now:
+        return   # player is frozen, ignore move
+
     p = players[playerKey]
     p["x"] = max(0, min(1000, p["x"] + data.get("dx", 0)))
     p["y"] = max(0, min(1000, p["y"] + data.get("dy", 0)))
@@ -197,27 +206,58 @@ def _on_move(data):
                   broadcast=True)
 
 
-@socketio.on("kill")
-def _on_kill(data):
-    sid, targetKey = request.sid, data.get("targetId")
-    killerKey      = sid_map.get(sid)
+def findClosestEnemy(playerKey):
+    p = players[playerKey]
+    closest = None
+    minDist = 50
+    for otherKey, other in players.items():
+        if otherKey == playerKey or other["team"] == p["team"]:
+            continue
+        dist = math.hypot(p["x"] - other["x"], p["y"] - other["y"])
+        if dist < minDist:
+            minDist = dist
+            closest = otherKey
+    return closest
 
-    if not killerKey or targetKey not in players:
+@socketio.on("kill")
+def _on_kill(_data):
+    sid       = request.sid
+    killerKey = sid_map.get(sid)
+    if not killerKey or killerKey not in players:
+        return
+
+    targetKey = findClosestEnemy(killerKey)
+    if not targetKey:
         return
 
     killer, victim = players[killerKey], players[targetKey]
+    had_flag = bool(victim["hasFlag"])
 
+
+    # steal flag if victim had one
     if victim["hasFlag"]:
         killer["hasFlag"] = victim["hasFlag"]
         victim["hasFlag"] = None
 
-    bx, by = team_data[victim["team"]]["base"].values()
-    victim["x"], victim["y"] = bx + random.randint(-30, 30), by + random.randint(-30, 30)
+    # freeze victim for 2.5s
+    now = time.time()
+    victim["frozen_until"] = now + 2.5
+    # let the victim client show UI freeze
+    # find victim’s socket id from sid_map
+    vsid = next((s for s,k in sid_map.items() if k==targetKey), None)
+    if vsid:
+        socketio.emit("player_frozen", {"duration":2.5}, room=vsid)
+
+    # respawn **only** if they did *not* have a flag stolen
+    if not had_flag:
+        bx, by = team_data[victim["team"]]["base"].values()
+        victim["x"] = bx + random.randint(-30, 30)
+        victim["y"] = by + random.randint(-30, 30)
 
     socketio.emit("player_killed", {
-        "killerId"     : killerKey,
-        "victimId"     : targetKey,
-        "victimPos"    : {"x": victim["x"], "y": victim["y"]},
+        "killerId":     killerKey,
+        "victimId":     targetKey,
+        "victimPos":    {"x": victim["x"], "y": victim["y"]},
         "killerHasFlag": killer["hasFlag"]
     }, broadcast=True)
 
@@ -227,33 +267,42 @@ def _check_flag_logic(sid):
     p = players[sid]
     for team, info in team_data.items():
         bx, by = info["base"].values()
-        close_to_base = abs(p["x"] - bx) < 20 and abs(p["y"] - by) < 20
+        close  = abs(p["x"]-bx)<20 and abs(p["y"]-by)<20
 
-        # pick up an enemy flag
-        if team != p["team"] and close_to_base and info["flagLocation"]:
+        # pick up enemy flag
+        if team!=p["team"] and close and info["flagLocation"]:
             info["score"] -= 1
-            info["flagLocation"] = None
-            if p["hasFlag"] is not None:
-                if team not in p["hasFlag"]:
-                    p["hasFlag"].append(team)
-            else:
-                p["hasFlag"] = [team]
-            socketio.emit("flag_taken", {
-                "playerId": sid, "flagTeam": team, "newScore": info["score"]
-            }, broadcast=True)
+            info["flagLocation"]=None
+            p["hasFlag"]= [team] if p["hasFlag"] is None else p["hasFlag"]+[team]
+            socketio.emit("flag_taken", {"playerId":sid,"flagTeam":team,"newScore":info["score"]}, broadcast=True)
 
-        # deliver a captured flag
-        elif team == p["team"] and close_to_base and p["hasFlag"]:
-            enemy_flags = p["hasFlag"]
-            for enemy_flag in enemy_flags:
+        # deliver captured flag
+        elif team==p["team"] and close and p["hasFlag"]:
+            for ef in p["hasFlag"]:
                 team_data[p["team"]]["score"] += 1
-                team_data[enemy_flag]["flagLocation"] = dict(team_data[enemy_flag]["base"])
-                p["hasFlag"] = None
+                team_data[ef]["flagLocation"] = dict(team_data[ef]["base"])
                 socketio.emit("flag_scored", {
                     "playerId": sid, "playerTeam": p["team"],
-                    "scoredFlag": enemy_flag,
-                    "teamScore": team_data[p['team']]['score']
+                    "scoredFlag": ef, "teamScore":team_data[p["team"]]["score"]
                 }, broadcast=True)
+            p["hasFlag"] = None
+
+def findClosestTeammate(playerKey):
+    p = players[playerKey]
+    closest_player = None
+    min_distance = 10
+    for player_id, player in players.items():
+        if player_id == playerKey or player["team"] != p["team"]:
+            continue
+        dx = p["x"] - player["x"]
+        dy = p["y"] - player["y"]
+        distance = math.sqrt(dx ** 2 + dy ** 2)
+
+        if distance < min_distance:
+            min_distance = distance
+            closest_player = player_id
+
+    return closest_player
 
 if __name__ == "__main__":
     extra = {}
