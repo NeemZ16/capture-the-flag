@@ -12,7 +12,9 @@ RUN npm install -g serve
 # copy all other files
 COPY ./react-app .
 
-# CMD ["npm", "run", "start"]
+# Accept build argument
+ARG REACT_APP_API_URL
+ENV REACT_APP_API_URL=$REACT_APP_API_URL
 
 # build the app
 RUN npm run build
