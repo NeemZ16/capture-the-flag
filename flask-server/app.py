@@ -205,6 +205,22 @@ def _on_move(data):
                   {"playerId": playerKey, **p},           
                   broadcast=True)
 
+@socketio.on("pass")
+def _on_pass(data):
+    sid       = request.sid
+    playerKey = sid_map.get(sid)
+    if not playerKey or playerKey not in players:
+        return
+    p = players[playerKey]
+    closestTeammateKey = findClosestTeammate(playerKey)
+    if closestTeammateKey is not None and p["hasFlag"] is not None:
+        teammate = players[closestTeammateKey]
+        teammate["hasFlag"] = p["hasFlag"]
+        p["hasFlag"] = None
+        _check_flag_logic(closestTeammateKey)
+        socketio.emit("flag_passed",
+                      {"playerId":playerKey, "teammateId":closestTeammateKey, "player":p, "teammate":teammate},
+                      broadcast=True)
 
 def findClosestEnemy(playerKey):
     p = players[playerKey]
@@ -303,6 +319,25 @@ def findClosestTeammate(playerKey):
             closest_player = player_id
 
     return closest_player
+
+# Finds the closest Teammate to the player that we pass into the function
+def findClosestTeammate(playerKey):
+    p = players[playerKey]
+    closest_player = None
+    min_distance = 50
+    for player_id, player in players.items():
+        if player_id == playerKey or player["team"] != p["team"]:
+            continue
+        dx = p["x"] - player["x"]
+        dy = p["y"] - player["y"]
+        distance = math.sqrt(dx ** 2 + dy ** 2)
+
+        if distance < min_distance:
+            min_distance = distance
+            closest_player = player_id
+
+    return closest_player
+
 
 if __name__ == "__main__":
     extra = {}
