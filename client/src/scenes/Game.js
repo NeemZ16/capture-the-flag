@@ -125,6 +125,13 @@ export class Game extends BaseScene {
             console.log("logout clicked");
         })
         this.uiElements.add(this.logoutBtn);
+
+        const welcomeText = this.add.text(50, navHeight/2, `hi ${this.game.username}!`, {
+            fontFamily: '"Jersey 10"',
+            fontSize: 40
+        })
+        .setOrigin(0, 0.5); // left align
+        this.uiElements.add(welcomeText);
     }
 
     repositionNavElements() {
