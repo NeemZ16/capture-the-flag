@@ -13,7 +13,7 @@ const Login = ({ setUsername }) => {
     e.preventDefault();
     
     // Endpoint URL – adjust if necessary
-    const endpoint = 'http://localhost:8000/login';
+    const endpoint = process.env.REACT_APP_API_URL + "login";;
     
     try {
       const response = await fetch(endpoint, {

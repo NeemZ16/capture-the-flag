@@ -114,7 +114,7 @@ export default function GamePage({ username, setUsername }) {
 
     const handleLogout = async () => {
 
-        const endpoint = 'http://localhost:8000/logout'
+        const endpoint = process.env.REACT_APP_API_URL + "logout";
 
         try {
             const response = await fetch(endpoint, {
