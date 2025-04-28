@@ -525,6 +525,8 @@ def _check_flag_logic(sid):
                     "teamScore": team_data[p['team']]['score']
                 }, broadcast=True)
 
+
+# Finds the closest Teammate to the player that we pass into the function
 def findClosestTeammate(playerKey):
     p = players[playerKey]
     closest_player = None
