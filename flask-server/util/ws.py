@@ -6,10 +6,17 @@ from flask import request
 players = {}
 
 # keep track of team data: color -> numPlayers, totalScore, flagTaken
-teamData = {}
+teamData = {
+    "red": {"numPlayers": 0, "score": 0, "flagTaken": False},
+    "blue": {"numPlayers": 0, "score": 0, "flagTaken": False},
+    "yellow": {"numPlayers": 0, "score": 0, "flagTaken": False},
+    "green": {"numPlayers": 0, "score": 0, "flagTaken": False},
+}
 
 # hardcoded from client/src/scenes/Game.js
-worldSize = 2000
+worldSize = 3000
+
+# 
 
 @socketio.on("connect")
 def initWs():

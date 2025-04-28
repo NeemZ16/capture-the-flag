@@ -48,7 +48,6 @@ export class Game extends BaseScene {
 
         // add logout button to top right
         this.logoutBtn = this.createBtn(this.dimensions.width - 50, navHeight/2, 'Logout', () => {
-            console.log("logout clicked");
             this.handleLogout();
         })
         this.uiElements.add(this.logoutBtn);
@@ -100,6 +99,8 @@ export class Game extends BaseScene {
         // create player object with circle
         const radius = 20;
         this.playerSprite = this.add.graphics();
+        this.playerSprite.lineStyle(4, 0xffffff, 1);  // 4px border, white color
+        this.playerSprite.strokeCircle(radius, radius, radius);  // Draw the border
         this.playerSprite.fillStyle(playerColor, 1); // Red color, full opacity
         this.playerSprite.fillCircle(radius, radius, radius);
 
@@ -143,7 +144,7 @@ export class Game extends BaseScene {
         // set player position and physics
         this.physics.world.enable(otherPlayer);
         otherPlayer.body.setCircle(radius);
-        otherPlayer.body.setDrag(100, 100);
+        // otherPlayer.body.setDrag(100, 100);
         otherPlayer.body.setCollideWorldBounds(true);
     
         // store in player group
@@ -153,20 +154,19 @@ export class Game extends BaseScene {
 
     connectWS() {
         // dont create new if exists
-        if (this.ws) return this.ws;
+        if (this.ws) return;
 
         this.ws = webSocketService;
         this.ws.init(this.game.username, this.worldSize);
 
         this.ws.on('init', d => {
-            localStorage.setItem('playerId', d.playerId);
             console.log("init called");
         })
     }
 
     create() {
         // set up cameras containers and groups
-        this.worldSize = 2000;
+        this.worldSize = 3000;
         this.uiCamera = this.cameras.add(0, 0, this.scale.width, this.scale.height);
         this.worldElements = this.add.container(0, 0);
         this.uiElements = this.add.container(0, 0);
@@ -218,76 +218,9 @@ export class Game extends BaseScene {
             const scale = maxSpeed / currentSpeed;
             body.setVelocity(body.velocity.x * scale, body.velocity.y * scale);
         }
-
-        // console.log("player position:", this.player.x, this.player.y);
     }
 
     onResize() {
         this.repositionNavElements();
     }
 }
-
-/*
-    [
-    "init",
-    {
-        "playerId": "QnJvAfezNsFl1q2nAAAD",
-        "players": {
-            "QnJvAfezNsFl1q2nAAAD": {
-                "username": "a",
-                "team": "blue",
-                "x": 900,
-                "y": 121,
-                "hasFlag": null
-            }
-        },
-        "teamData": {
-            "red": {
-                "score": 5,
-                "base": {
-                    "x": 100,
-                    "y": 100
-                },
-                "flagLocation": {
-                    "x": 100,
-                    "y": 100
-                }
-            },
-            "blue": {
-                "score": 5,
-                "base": {
-                    "x": 900,
-                    "y": 100
-                },
-                "flagLocation": {
-                    "x": 900,
-                    "y": 100
-                }
-            },
-            "green": {
-                "score": 5,
-                "base": {
-                    "x": 100,
-                    "y": 900
-                },
-                "flagLocation": {
-                    "x": 100,
-                    "y": 900
-                }
-            },
-            "magenta": {
-                "score": 5,
-                "base": {
-                    "x": 900,
-                    "y": 900
-                },
-                "flagLocation": {
-                    "x": 900,
-                    "y": 900
-                }
-            }
-        },
-        "remainingTime": 599
-    }
-]
-    */
