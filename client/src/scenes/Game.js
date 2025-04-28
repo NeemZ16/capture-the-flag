@@ -33,6 +33,63 @@ export class Game extends BaseScene {
         this.worldElements.add(graphics);
     }
 
+    createNav() {
+        const navHeight = 50;
+        this.nav = this.add.graphics();
+        this.nav.fillStyle(0x555555, 0.5);
+        this.nav.fillRect(0, 0, this.dimensions.width, navHeight);
+        this.uiElements.add(this.nav);
+
+        // add logo to center of nav
+        this.logo = this.add.image(this.dimensions.width / 2, navHeight / 2, 'logo');
+        this.logo.setOrigin(0.5);
+        this.logo.setScale(0.25);
+        this.uiElements.add(this.logo);
+
+        // add logout button to top right
+        this.logoutBtn = this.createBtn(this.dimensions.width - 50, navHeight/2, 'Logout', () => {
+            console.log("logout clicked");
+            this.handleLogout();
+        })
+        this.uiElements.add(this.logoutBtn);
+
+        const welcomeText = this.add.text(50, navHeight/2, `hi ${this.game.username}!`, {
+            fontFamily: '"Jersey 10"',
+            fontSize: 40
+        })
+        .setOrigin(0, 0.5); // left align
+        this.uiElements.add(welcomeText);
+    }
+
+    repositionNavElements() {
+        const navHeight = 50;
+    
+        // Update nav bar width
+        this.nav.clear();
+        this.nav.fillStyle(0x555555, 0.5);
+        this.nav.fillRect(0, 0, this.dimensions.width, navHeight);  // Redraw with updated width
+    
+        // Update logo position (centered horizontally)
+        this.logo.setPosition(this.dimensions.width / 2, navHeight / 2);
+    
+        // Update logout button position (top right)
+        this.logoutBtn.setPosition(this.dimensions.width - 50, navHeight / 2);
+    }
+
+    handleLogout() {
+        const url = import.meta.env.VITE_API_URL + "logout";
+        fetch(url, {
+            method: 'POST',
+            credentials: 'include', // will include the auth_token cookie
+        })
+        .then((res) => res.text().then((text) => ({ status: res.status, text })))
+        .then(({status, text}) => {
+            // reset username and reload should go to main menu
+            this.game.username = null;
+            window.location.reload();
+        })
+    }
+
     /**
      * Creates own player object with username above it
      */
@@ -107,48 +164,6 @@ export class Game extends BaseScene {
         })
     }
 
-    createNav() {
-        const navHeight = 50;
-        this.nav = this.add.graphics();
-        this.nav.fillStyle(0x555555, 0.5);
-        this.nav.fillRect(0, 0, this.dimensions.width, navHeight);
-        this.uiElements.add(this.nav);
-
-        // add logo to center of nav
-        this.logo = this.add.image(this.dimensions.width / 2, navHeight / 2, 'logo');
-        this.logo.setOrigin(0.5);
-        this.logo.setScale(0.25);
-        this.uiElements.add(this.logo);
-
-        // add logout button to top right
-        this.logoutBtn = this.createBtn(this.dimensions.width - 50, navHeight/2, 'Logout', () => {
-            console.log("logout clicked");
-        })
-        this.uiElements.add(this.logoutBtn);
-
-        const welcomeText = this.add.text(50, navHeight/2, `hi ${this.game.username}!`, {
-            fontFamily: '"Jersey 10"',
-            fontSize: 40
-        })
-        .setOrigin(0, 0.5); // left align
-        this.uiElements.add(welcomeText);
-    }
-
-    repositionNavElements() {
-        const navHeight = 50;
-    
-        // Update nav bar width
-        this.nav.clear();
-        this.nav.fillStyle(0x555555, 0.5);
-        this.nav.fillRect(0, 0, this.dimensions.width, navHeight);  // Redraw with updated width
-    
-        // Update logo position (centered horizontally)
-        this.logo.setPosition(this.dimensions.width / 2, navHeight / 2);
-    
-        // Update logout button position (top right)
-        this.logoutBtn.setPosition(this.dimensions.width - 50, navHeight / 2);
-    }
-    
     create() {
         // set up cameras containers and groups
         this.worldSize = 2000;
