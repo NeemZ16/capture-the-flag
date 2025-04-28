@@ -48,6 +48,13 @@ export default function useSocket(username) { // ← MOD add param
         [d.playerTeam]: { ...t[d.playerTeam], score: d.teamScore }
       }))
     );
+    socket.on(SOCKET_EVENTS.FLAG_PASSED, d => {
+      setPlayers(prevPlayers => ({
+        ...prevPlayers,
+        [d.playerId]: d.player,
+        [d.teammateId]: d.teammate
+      }));
+    });
 
     socket.on(SOCKET_EVENTS.TIME_SYNC, d =>
       setRemaining(d.remainingTime ?? 0)

@@ -21,6 +21,7 @@ export default class GameScene extends Phaser.Scene {
     // input
     this.cursors = this.input.keyboard.createCursorKeys();
     this.keys    = this.input.keyboard.addKeys('W,A,S,D');
+    this.passKey = this.input.keyboard.addKey('E');
 
     // make canvas focusable for keyboard
     this.game.canvas.setAttribute('tabindex', '0');
@@ -46,6 +47,11 @@ export default class GameScene extends Phaser.Scene {
     if ((dx || dy)) {
       socketService.emit(SOCKET_EVENTS.MOVE, { dx, dy });
     }
+    this.passKey.on(
+        'down',
+        () => socketService.emit(SOCKET_EVENTS.PASS, {})
+    )
+
   }
 
   ensureBaseFlag(team, x, y) {
