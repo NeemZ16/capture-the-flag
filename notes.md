@@ -39,6 +39,7 @@
     - send username, flagColor
   - server
     - update playerDict w hasFlag
+    - update teamData with flagTaken
     - broadcast flagPosition, flagColor
 - flag-scored
   - client
