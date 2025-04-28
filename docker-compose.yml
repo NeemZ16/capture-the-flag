@@ -21,6 +21,8 @@ services:
       context: .
       dockerfile: client.Dockerfile
     container_name: react-frontend
+    environment:
+      REACT_APP_API_URL: http://localhost:8000/
     depends_on:
       - server
     ports:
