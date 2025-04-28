@@ -20,8 +20,9 @@ const Register = () => {
       return;
     }
 
+    const apiUrl = process.env.REACT_APP_API_URL + "me";
     try {
-      const response = await fetch('http://localhost:8000/register', {
+      const response = await fetch(apiUrl, {
         method: 'POST',
         credentials: 'include', //will include any cookies that might be added later        
         headers: { 'Content-Type': 'application/json' },
