@@ -3,8 +3,8 @@
 - scores individual based on how many flags scored
 - team scores are totals of individual scores
   - if player with 20 flags leaves, then team score -20
-- on contact, if has flag and different color then flag stolen and player returned to base
-  - if player doesn't have flag or is same color nothing happens
+- player interactions with E and F
+  - if player doesn't have flag [new condition] or is same color nothing happens
 - on join, player added to team with least number of players
 - flag positions are shown to all users with arrows
 

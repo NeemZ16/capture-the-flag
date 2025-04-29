@@ -33,6 +33,9 @@ export class Game extends BaseScene {
         this.worldElements.add(graphics);
     }
 
+    /**
+     * Create top "nav" with logout btn
+     */
     createNav() {
         const navHeight = 50;
         this.nav = this.add.graphics();
@@ -47,30 +50,30 @@ export class Game extends BaseScene {
         this.uiElements.add(this.logo);
 
         // add logout button to top right
-        this.logoutBtn = this.createBtn(this.dimensions.width - 50, navHeight/2, 'Logout', () => {
+        this.logoutBtn = this.createBtn(this.dimensions.width - 50, navHeight / 2, 'Logout', () => {
             this.handleLogout();
         })
         this.uiElements.add(this.logoutBtn);
 
-        const welcomeText = this.add.text(50, navHeight/2, `hi ${this.game.username}!`, {
+        const welcomeText = this.add.text(50, navHeight / 2, `hi ${this.game.username}!`, {
             fontFamily: '"Jersey 10"',
             fontSize: 40
         })
-        .setOrigin(0, 0.5); // left align
+            .setOrigin(0, 0.5); // left align
         this.uiElements.add(welcomeText);
     }
 
     repositionNavElements() {
         const navHeight = 50;
-    
+
         // Update nav bar width
         this.nav.clear();
         this.nav.fillStyle(0x555555, 0.5);
         this.nav.fillRect(0, 0, this.dimensions.width, navHeight);  // Redraw with updated width
-    
+
         // Update logo position (centered horizontally)
         this.logo.setPosition(this.dimensions.width / 2, navHeight / 2);
-    
+
         // Update logout button position (top right)
         this.logoutBtn.setPosition(this.dimensions.width - 50, navHeight / 2);
     }
@@ -81,12 +84,12 @@ export class Game extends BaseScene {
             method: 'POST',
             credentials: 'include', // will include the auth_token cookie
         })
-        .then((res) => res.text().then((text) => ({ status: res.status, text })))
-        .then(({status, text}) => {
-            // reset username and reload should go to main menu
-            this.game.username = null;
-            window.location.reload();
-        })
+            .then((res) => res.text().then((text) => ({ status: res.status, text })))
+            .then(({ status, text }) => {
+                // reset username and reload should go to main menu
+                this.game.username = null;
+                window.location.reload();
+            })
     }
 
     /**
@@ -129,40 +132,40 @@ export class Game extends BaseScene {
     createOtherPlayer(x, y, username, playerColor) {
         // create player container
         const otherPlayer = this.add.container(x, y);
-    
+
         // create player object with circle
         const radius = 20;
         const sprite = this.add.graphics();
         sprite.fillStyle(playerColor, 1);
         sprite.fillCircle(radius, radius, radius);
         otherPlayer.add(sprite);
-    
+
         // create player name centered over sprite
         const name = this.add.bitmapText(radius, -radius, 'pixel', username, 12).setOrigin(0.5);
         otherPlayer.add(name);
-    
+
         // set player position and physics
         this.physics.world.enable(otherPlayer);
         otherPlayer.body.setCircle(radius);
         // otherPlayer.body.setDrag(100, 100);
         otherPlayer.body.setCollideWorldBounds(true);
-    
+
         // store in player group
         otherPlayer.username = username;
         this.otherPlayers.add(otherPlayer);
     }
 
-    connectWS() {
-        // dont create new if exists
-        if (this.ws) return;
+    // connectWS() {
+    //     // dont create new if exists
+    //     if (this.ws) return;
 
-        this.ws = webSocketService;
-        this.ws.init(this.game.username, this.worldSize);
+    //     this.ws = webSocketService;
+    //     this.ws.init(this.game.username, this.worldSize);
 
-        this.ws.on('init', d => {
-            console.log("init called");
-        })
-    }
+    //     this.ws.on('init', d => {
+    //         console.log("init called");
+    //     })
+    // }
 
     create() {
         // set up cameras containers and groups
@@ -172,7 +175,7 @@ export class Game extends BaseScene {
         this.uiElements = this.add.container(0, 0);
         this.uiCamera.ignore(this.worldElements);
         this.cameras.main.ignore(this.uiElements);
-        
+
         // initialize functions
         this.createBg();
         this.createNav();
