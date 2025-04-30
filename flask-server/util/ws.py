@@ -1,8 +1,6 @@
-from app import socketio
+from shared import socketio
 from flask import request
 from util.wsHelpers import Helper
-
-
 
 ### WS EVENTS DEFINED IN THIS FILE
 

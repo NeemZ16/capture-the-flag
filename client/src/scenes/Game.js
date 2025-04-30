@@ -1,5 +1,7 @@
+import { SOCKET_EVENTS } from '../utils/gameConstants';
 import webSocketService from '../utils/wsService';
 import { BaseScene } from './BaseScene';
+import { connectWS } from '../utils/wsEvents';
 
 
 export class Game extends BaseScene {
@@ -180,7 +182,7 @@ export class Game extends BaseScene {
         this.createBg();
         this.createNav();
         this.createPlayer();
-        // this.connectWS();
+        connectWS(this);
 
         // initialize interaction
         this.cursors = this.input.keyboard.createCursorKeys();
@@ -220,6 +222,11 @@ export class Game extends BaseScene {
             // Rescale to max speed while keeping direction
             const scale = maxSpeed / currentSpeed;
             body.setVelocity(body.velocity.x * scale, body.velocity.y * scale);
+        }
+
+        // if body is moving then broadcast position
+        if (currentSpeed > 1) {
+            this.ws.emit(SOCKET_EVENTS.MOVE, {})
         }
     }
 

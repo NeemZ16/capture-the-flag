@@ -1,7 +1,3 @@
-import os, logging
-# import random, string, time, threading
-# from typing import Optional
-
 # Try to enable eventlet if it is installable on this runtime
 try:
     import eventlet
@@ -10,21 +6,24 @@ try:
 except Exception:
     _async_mode = "threading"
 
+import os, logging
 from flask import Flask, request
 from flask_cors import CORS
 from flask_restful import Api
 from logging.handlers import RotatingFileHandler
-from flask_socketio import SocketIO
+# from flask_socketio import SocketIO
 
+from shared import socketio
 from util.ws import *
-from util.auth import * #importing endpoints from auth.py
+from util.auth import *
 
 # Flask / Socket.IO setup
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev_secret")
 CORS(app, origins=["http://localhost:8080"], supports_credentials=True)
 api = Api(app)
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode=_async_mode)
+# socketio = SocketIO(app, cors_allowed_origins="*", async_mode=_async_mode)
+socketio.init_app(app, async_mode=_async_mode)
 
 #logging setup
 os.makedirs("../logs", exist_ok=True)

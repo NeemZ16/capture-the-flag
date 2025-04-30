@@ -56,7 +56,7 @@ export default class GameScene extends Phaser.Scene {
   hideBaseFlag(team) {
     this.baseFlags[team]?.destroy();
     delete this.baseFlags[team];
-  }
+  }xx
 
   upsertAvatar(id, data, localId) {
     if (this.avatars[id]) {
