@@ -11,7 +11,6 @@ from flask import Flask, request
 from flask_cors import CORS
 from flask_restful import Api
 from logging.handlers import RotatingFileHandler
-# from flask_socketio import SocketIO
 
 from shared import socketio
 from util.ws import *
@@ -22,10 +21,9 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev_secret")
 CORS(app, origins=["http://localhost:8080"], supports_credentials=True)
 api = Api(app)
-# socketio = SocketIO(app, cors_allowed_origins="*", async_mode=_async_mode)
 socketio.init_app(app, async_mode=_async_mode)
 
-#logging setup
+# logging setup
 os.makedirs("../logs", exist_ok=True)
 file_handler = RotatingFileHandler("../logs/server.log",
                                    maxBytes=1_000_000, backupCount=5)
@@ -34,12 +32,11 @@ file_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s: %(messag
 app.logger.setLevel(logging.INFO)
 app.logger.addHandler(file_handler)
 
-#flask REST/CRUD API endpoints
+# auth endpoints
 api.add_resource(Register, "/register")
 api.add_resource(Login,    "/login")
 api.add_resource(Logout,   "/logout")
 api.add_resource(Me,       "/me")
-
 
 @app.after_request
 def log_request(response):

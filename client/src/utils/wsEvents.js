@@ -15,11 +15,9 @@ export function connectWS(scene) {
 
     // add event listeners for specific socket events
     scene.ws.on(SOCKET_EVENTS.INIT, d => {
-        console.log("init called");
         onInit(d, scene);
     })
 
-    
     scene.ws.on(SOCKET_EVENTS.PLAYER_JOINED, d => {
         onJoin(d, scene);
     })
@@ -31,10 +29,13 @@ function onInit(d, scene) {
 }
 
 function onJoin(d, scene) {
-    if (d.username === scene.game.username) return;
-
     // expecting d.color to be string color name
-    scene.createPlayer(d.position.x, d.position.y, d.username, COLOR[d.color]);
+    if (d.username === scene.game.username) {
+        scene.createPlayer(d.position.x, d.position.y, d.username, COLOR[d.color]);
+    } else {
+        scene.createOtherPlayer(d.position.x, d.position.y, d.username, COLOR[d.color]);
+    }
+
 }
 
 function onMove(d, scene) {

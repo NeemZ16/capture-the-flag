@@ -95,9 +95,9 @@ export class Game extends BaseScene {
     }
 
     /**
-     * Creates own player object with username above it
+     * Creates own player object with username above it.
      */
-    createPlayer(x = this.worldSize / 2, y = this.worldSize / 2, username = this.game.username, playerColor = 0xff0000) {
+    createPlayer(x, y, username, playerColor) {
         // create player container
         this.player = this.add.container(x, y);
 
@@ -147,27 +147,14 @@ export class Game extends BaseScene {
         otherPlayer.add(name);
 
         // set player position and physics
-        this.physics.world.enable(otherPlayer);
-        otherPlayer.body.setCircle(radius);
-        // otherPlayer.body.setDrag(100, 100);
-        otherPlayer.body.setCollideWorldBounds(true);
+        // this.physics.world.enable(otherPlayer);
+        // otherPlayer.body.setCircle(radius);
+        // otherPlayer.body.setCollideWorldBounds(true);
 
         // store in player group
         otherPlayer.username = username;
         this.otherPlayers.add(otherPlayer);
     }
-
-    // connectWS() {
-    //     // dont create new if exists
-    //     if (this.ws) return;
-
-    //     this.ws = webSocketService;
-    //     this.ws.init(this.game.username, this.worldSize);
-
-    //     this.ws.on('init', d => {
-    //         console.log("init called");
-    //     })
-    // }
 
     create() {
         // set up cameras containers and groups
@@ -181,7 +168,6 @@ export class Game extends BaseScene {
         // initialize functions
         this.createBg();
         this.createNav();
-        this.createPlayer();
         connectWS(this);
 
         // initialize interaction
@@ -189,6 +175,9 @@ export class Game extends BaseScene {
     }
 
     update() {
+        // if no current player then early return
+        if (!this.player) return;
+
         /* SET MOVEMENT OF PLAYER SO THERE IS RESIDUAL VELOCITY ON MOVEMENT
          DIAGONALS ARE NORMALIZED TO PREVENT SPEEDUP */
 
@@ -224,7 +213,7 @@ export class Game extends BaseScene {
             body.setVelocity(body.velocity.x * scale, body.velocity.y * scale);
         }
 
-        // if body is moving then broadcast position
+        // if player moving broadcast position
         if (currentSpeed > 1) {
             this.ws.emit(SOCKET_EVENTS.MOVE, {})
         }
