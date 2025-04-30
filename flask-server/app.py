@@ -14,9 +14,9 @@ from flask import Flask, request
 from flask_cors import CORS
 from flask_restful import Api
 from logging.handlers import RotatingFileHandler
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO
 
-#non websocket imports
+from util.ws import *
 from util.auth import * #importing endpoints from auth.py
 
 # Flask / Socket.IO setup
@@ -24,6 +24,7 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev_secret")
 CORS(app, origins=["http://localhost:8080"], supports_credentials=True)
 api = Api(app)
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode=_async_mode)
 
 #logging setup
 os.makedirs("../logs", exist_ok=True)
@@ -40,8 +41,6 @@ api.add_resource(Login,    "/login")
 api.add_resource(Logout,   "/logout")
 api.add_resource(Me,       "/me")
 
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode=_async_mode)
-app.logger.info("Socket.IO async_mode = %s", _async_mode) #for logging purposes
 
 @app.after_request
 def log_request(response):
@@ -250,10 +249,4 @@ def log_request(response):
 #             }, broadcast=True)
 
 if __name__ == "__main__":
-    # extra = {}
-    # if _async_mode == "threading":
-        # extra["allow_unsafe_werkzeug"] = True
-
-    #can now see any requests made to the server in the console
-    # socketio.run(app, host="0.0.0.0", port=8000, log_output=True, **extra)
     socketio.run(app, host="0.0.0.0", port=8000, log_output=True)
