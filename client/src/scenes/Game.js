@@ -153,7 +153,7 @@ export class Game extends BaseScene {
 
     create() {
         // set up cameras containers and groups
-        this.worldSize = 3000;
+        this.worldSize = 2000;
         this.uiCamera = this.cameras.add(0, 0, this.scale.width, this.scale.height);
         this.worldElements = this.add.container(0, 0);
         this.uiElements = this.add.container(0, 0);
@@ -200,7 +200,7 @@ export class Game extends BaseScene {
 
         // Optionally clamp total velocity (not just X/Y separately)
         const body = this.player.body;
-        const maxSpeed = 200;
+        const maxSpeed = 250;
         const currentSpeed = Math.hypot(body.velocity.x, body.velocity.y);
 
         if (currentSpeed > maxSpeed) {

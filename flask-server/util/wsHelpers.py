@@ -3,7 +3,7 @@ import random
 class Helper:
     def __init__(self):
         'globally track players and team data in Helper object'
-        self.worldSize = 3000  # hardcoded from client/src/scenes/Game.js
+        self.worldSize = 2000  # hardcoded from client/src/scenes/Game.js
         self.padding = 200  # padding between flag and world borders
         self.spawnOffset = 150  # max player spawn distance from base
 
