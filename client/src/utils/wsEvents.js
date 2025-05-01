@@ -28,7 +28,17 @@ export function connectWS(scene) {
 }
 
 function onInit(d, scene) {
+    const allPlayers = d.players;
+    const teamData = d.teamData;
+    
     // create players for d.players
+    for (const username in allPlayers) {
+        if (username !== scene.game.username) {
+            const player = allPlayers[username];
+            scene.createOtherPlayer(player.position.x, player.position.y, username, COLOR[player.color]);
+        }
+    }
+
     // generate flags
 }
 
