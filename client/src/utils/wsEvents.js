@@ -21,6 +21,10 @@ export function connectWS(scene) {
     scene.ws.on(SOCKET_EVENTS.PLAYER_JOINED, d => {
         onJoin(d, scene);
     })
+
+    scene.ws.on(SOCKET_EVENTS.MOVE, d => {
+        onMove(d, scene);
+    })
 }
 
 function onInit(d, scene) {
@@ -39,6 +43,17 @@ function onJoin(d, scene) {
 }
 
 function onMove(d, scene) {
+    // get username and position from d
+    const { username, position } = d;
+
+    // update that player's position
+    const playerToMove = scene.otherPlayers[username];
+    if (playerToMove) {
+        playerToMove.setPosition(position.x, position.y);
+    }
+}
+
+function onDisconnect(d, scene) {
 
 }
 
@@ -47,9 +62,5 @@ function onFlagGrab(d, scene) {
 }
 
 function onFlagScore(d, scene) {
-
-}
-
-function onDisconnect(d, scene) {
 
 }

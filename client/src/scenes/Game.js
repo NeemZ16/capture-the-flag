@@ -1,5 +1,4 @@
 import { SOCKET_EVENTS } from '../utils/gameConstants';
-import webSocketService from '../utils/wsService';
 import { BaseScene } from './BaseScene';
 import { connectWS } from '../utils/wsEvents';
 
@@ -146,14 +145,10 @@ export class Game extends BaseScene {
         const name = this.add.bitmapText(radius, -radius, 'pixel', username, 12).setOrigin(0.5);
         otherPlayer.add(name);
 
-        // set player position and physics
-        // this.physics.world.enable(otherPlayer);
-        // otherPlayer.body.setCircle(radius);
-        // otherPlayer.body.setCollideWorldBounds(true);
-
-        // store in player group
+        // store in player dict
         otherPlayer.username = username;
-        this.otherPlayers.add(otherPlayer);
+        this.otherPlayers[username] = otherPlayer;
+        this.worldElements.add(otherPlayer);
     }
 
     create() {
@@ -164,6 +159,7 @@ export class Game extends BaseScene {
         this.uiElements = this.add.container(0, 0);
         this.uiCamera.ignore(this.worldElements);
         this.cameras.main.ignore(this.uiElements);
+        this.otherPlayers = {};
 
         // initialize functions
         this.createBg();
@@ -215,7 +211,13 @@ export class Game extends BaseScene {
 
         // if player moving broadcast position
         if (currentSpeed > 1) {
-            this.ws.emit(SOCKET_EVENTS.MOVE, {})
+            this.ws.emit(SOCKET_EVENTS.MOVE, {
+                username: this.game.username,
+                position: {
+                    x: this.player.x,
+                    y: this.player.y
+                }
+            })
         }
     }
 

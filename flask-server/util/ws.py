@@ -18,3 +18,6 @@ def initWs():
         "teamData": helper.teamData,
     })
 
+@socketio.on("move")
+def broadcastMove(data):
+    socketio.emit("move", data, include_self=False)
