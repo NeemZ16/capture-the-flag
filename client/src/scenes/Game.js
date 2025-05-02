@@ -1,4 +1,4 @@
-import { SOCKET_EVENTS } from '../utils/gameConstants';
+import { SOCKET_EVENTS, COLOR } from '../utils/gameConstants';
 import { BaseScene } from './BaseScene';
 import { connectWS } from '../utils/wsEvents';
 
@@ -79,26 +79,13 @@ export class Game extends BaseScene {
         this.logoutBtn.setPosition(this.dimensions.width - 50, navHeight / 2);
     }
 
-    handleLogout() {
-        const url = import.meta.env.VITE_API_URL + "logout";
-        fetch(url, {
-            method: 'POST',
-            credentials: 'include', // will include the auth_token cookie
-        })
-            .then((res) => res.text().then((text) => ({ status: res.status, text })))
-            .then(({ status, text }) => {
-                // reset username and reload should go to main menu
-                this.game.username = null;
-                window.location.reload();
-            })
-    }
-
     /**
      * Creates own player object with username above it.
      */
-    createPlayer(x, y, username, playerColor) {
+    createPlayer(x, y, username, playerColor, teamColor) {
         // create player container
         this.player = this.add.container(x, y);
+        this.player.teamColor = teamColor;
 
         // create player object with circle
         const radius = 20;
@@ -156,6 +143,72 @@ export class Game extends BaseScene {
             .setScale(2).setTint(colorCode);
         this.flags[color] = flag;
         this.worldElements.add(flag);
+    }
+
+    /**
+     * Check whether own player is within flag pickup distance.
+     * Call pickup method and emit `flag_taken` event.
+     */
+    checkFlagPickup() {
+        // if player already has flag, don't pick up
+        if (this.player.carriedFlag) return;
+
+        // set threshold distance for pickup
+        const pickupThreshold = 30;
+
+        // iterate through this.flags
+        for (const [color, flag] of Object.entries(this.flags)) {
+            // if own flag do nothing
+            if (color === this.player.teamColor) continue;
+
+            // compare player position to flag position within threshold
+            const dx = flag.x - this.player.x;
+            const dy = flag.y - this.player.y;
+            const distance = Math.hypot(dx, dy);
+            if (distance < pickupThreshold) {
+                this.pickupFlag(color, this.game.username);
+
+                // if within then pick up and send flag pickup event
+                this.ws.emit('flag_taken', {
+                    color: color,
+                    username: this.game.username,
+                })
+            }
+        }
+    }
+
+    /**
+     * Handles rendering changes for flag pickup
+     * @param {*} color - as string
+     * @param {*} username - of player with flag
+     */
+    pickupFlag(color, username) {        
+        // remove flag
+        const flag = this.flags[color];
+        if (!flag) return;
+        flag.destroy();
+        delete this.flags[color];
+
+        // get player with username
+        let playerToUpdate;
+        if (username === this.game.username) {
+            playerToUpdate = this.player;
+        } else {
+            playerToUpdate = this.otherPlayers[username];
+        }
+
+        // update player object to have flag
+        const flagSprite = this.add.image(0, 0, 'flag')
+            .setScale(1.2)
+            .setTint(COLOR[color])
+            .setAngle(45)
+            .setOrigin(0.5)
+            .setPosition(40, 15);
+
+        playerToUpdate.add(flagSprite);
+
+        // store reference to flag
+        playerToUpdate.carriedFlag = flagSprite;
     }
 
     create() {
@@ -226,6 +279,7 @@ export class Game extends BaseScene {
                     y: this.player.y
                 }
             })
+            this.checkFlagPickup();
         }
     }
 

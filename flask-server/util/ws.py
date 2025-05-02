@@ -25,5 +25,13 @@ def broadcastMove(data):
 @socketio.on("disconnect")
 def broadcastLeave():
     socketio.emit("player_left", helper.removePlayer(request.sid))
+
+@socketio.on("flag_taken")
+def broadcastFlagTaken(data):
+    
+
+    # TODO: update teamData flag position
+    # TODO: update players hasFlag
+    socketio.emit("flag_taken", data, include_self=False)
     
     

@@ -34,7 +34,7 @@ export function connectWS(scene) {
 function onInit(d, scene) {
     const allPlayers = d.players;
     const teamData = d.teamData;
-    
+
     // create players for d.players
     for (const username in allPlayers) {
         if (username !== scene.game.username && !(username in scene.otherPlayers)) {
@@ -47,15 +47,19 @@ function onInit(d, scene) {
     for (const color in teamData) {
         const colorCode = COLOR[color];
         const data = teamData[color];
-        scene.createFlag(data.flagPosition, color, colorCode);
+
+        // if flag not taken
+        if (data.flagPosition) {
+            scene.createFlag(data.flagPosition, color, colorCode);
+        }
     }
 }
 
 function onJoin(d, scene) {
     // expecting d.color to be string color name
     if (d.username === scene.game.username) {
-        scene.createPlayer(d.position.x, d.position.y, d.username, COLOR[d.color]);
-    } else if (!(d.username in scene.otherPlayers)){
+        scene.createPlayer(d.position.x, d.position.y, d.username, COLOR[d.color], d.color);
+    } else if (!(d.username in scene.otherPlayers)) {
         scene.createOtherPlayer(d.position.x, d.position.y, d.username, COLOR[d.color]);
     }
 }
