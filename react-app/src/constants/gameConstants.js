@@ -14,11 +14,16 @@ export const SOCKET_EVENTS = {
   PLAYER_JOINED:'player_joined',
   PLAYER_LEFT:  'player_left',
   PLAYER_MOVED: 'player_moved',
+  FLAG_PASSED:  'flag_passed',
   FLAG_TAKEN:   'flag_taken',
   FLAG_SCORED:  'flag_scored',
   TIME_SYNC:    'time_sync',
   GAME_ENDED:   'game_ended',
   MOVE:         'move',
+
   KILL:         'kill',
+  PLAYER_KILLED: 'player_killed',
+
+  PASS:         'pass',
   GAME_DESTROYED: 'game_destroyed',
 };

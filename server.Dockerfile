@@ -10,7 +10,7 @@ RUN pip install -r requirements.txt
 COPY ./flask-server .
 
 # wait for db
-ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.2.1/wait /wait
-RUN chmod +x /wait
+## Add the wait script to the image
+COPY --from=ghcr.io/ufoscout/docker-compose-wait:latest /wait /wait
 
 CMD /wait && python3 -u app.py

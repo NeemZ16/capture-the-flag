@@ -48,6 +48,13 @@ export default function useSocket(username) { // ← MOD add param
         [d.playerTeam]: { ...t[d.playerTeam], score: d.teamScore }
       }))
     );
+    socket.on(SOCKET_EVENTS.FLAG_PASSED, d => {
+      setPlayers(prevPlayers => ({
+        ...prevPlayers,
+        [d.playerId]: d.player,
+        [d.teammateId]: d.teammate
+      }));
+    });
 
     socket.on(SOCKET_EVENTS.TIME_SYNC, d =>
       setRemaining(d.remainingTime ?? 0)
@@ -55,6 +62,36 @@ export default function useSocket(username) { // ← MOD add param
     socket.on(SOCKET_EVENTS.GAME_ENDED, d =>
       alert(`Game Over!\nWinner: ${d.winner.toUpperCase()} (${d.score} pts)`)
     );
+
+    socket.on(SOCKET_EVENTS.PLAYER_KILLED, d => {
+      setPlayers(p => {
+        const np = { ...p };
+        // respawn victim at base
+        if (np[d.victimId]) {
+          np[d.victimId] = {
+            ...np[d.victimId],
+            x: d.victimPos.x,
+            y: d.victimPos.y,
+            hasFlag: null
+          };
+        }
+        // update killer’s flag state
+        if (np[d.killerId]) {
+          np[d.killerId] = {
+            ...np[d.killerId],
+            hasFlag: d.killerHasFlag
+          };
+        }
+        return np;
+      });
+
+      // optional UI feedback
+      if (d.victimId === localId) {
+        alert(`You were killed by ${players[d.killerId].username}!`);
+      } else if (d.killerId === localId) {
+        alert(`You killed ${players[d.victimId].username}!`);
+      }
+    });    
 
     return () => {
       socketService.disconnect();

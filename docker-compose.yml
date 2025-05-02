@@ -1,8 +1,6 @@
 services:
   mongo:
     image: mongo:4.2.5
-    ports:
-      - '27017:27017'
 
   server:
     build:
@@ -22,6 +20,8 @@ services:
     build: 
       context: .
       dockerfile: client.Dockerfile
+      args:
+        REACT_APP_API_URL: http://localhost:8000/
     container_name: react-frontend
     depends_on:
       - server

@@ -9,12 +9,13 @@ import './assets/styles/style.css';
 
 function App() {
   const [username, setUsername] = useState('');
+  const apiUrl = process.env.REACT_APP_API_URL + "me";
 
   //on startup, check if user is logged in
   useEffect(() => {
     const loadCurrentUser = async () => {
       try {
-        const res = await fetch('http://localhost:8000/me', {
+        const res = await fetch(apiUrl, {
           method: 'GET',
           credentials: 'include'
         });
