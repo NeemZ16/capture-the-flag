@@ -11,7 +11,7 @@ helper = Helper()
 def initWs():
     playerName = request.args.get("username")
 
-    socketio.emit("player_joined", helper.addNewPlayer(playerName))
+    socketio.emit("player_joined", helper.addNewPlayer(playerName, request.sid))
 
     socketio.emit("init", {
         "players" : helper.players,
@@ -21,3 +21,9 @@ def initWs():
 @socketio.on("move")
 def broadcastMove(data):
     socketio.emit("move", data, include_self=False)
+
+@socketio.on("disconnect")
+def broadcastLeave():
+    socketio.emit("player_left", helper.removePlayer(request.sid))
+    
+    

@@ -25,6 +25,10 @@ export function connectWS(scene) {
     scene.ws.on(SOCKET_EVENTS.MOVE, d => {
         onMove(d, scene);
     })
+
+    scene.ws.on(SOCKET_EVENTS.PLAYER_LEFT, d => {
+        onLeave(d, scene);
+    })
 }
 
 function onInit(d, scene) {
@@ -33,7 +37,7 @@ function onInit(d, scene) {
     
     // create players for d.players
     for (const username in allPlayers) {
-        if (username !== scene.game.username) {
+        if (username !== scene.game.username && !(username in scene.otherPlayers)) {
             const player = allPlayers[username];
             scene.createOtherPlayer(player.position.x, player.position.y, username, COLOR[player.color]);
         }
@@ -46,10 +50,9 @@ function onJoin(d, scene) {
     // expecting d.color to be string color name
     if (d.username === scene.game.username) {
         scene.createPlayer(d.position.x, d.position.y, d.username, COLOR[d.color]);
-    } else {
+    } else if (!(d.username in scene.otherPlayers)){
         scene.createOtherPlayer(d.position.x, d.position.y, d.username, COLOR[d.color]);
     }
-
 }
 
 function onMove(d, scene) {
@@ -63,8 +66,18 @@ function onMove(d, scene) {
     }
 }
 
-function onDisconnect(d, scene) {
+function onLeave(d, scene) {
+    // destroy disconnected player
+    const player = scene.otherPlayers[d.username];
+    if (player) {
+        player.destroy(); // destroys container and its children
+        delete scene.otherPlayers[d.username];
 
+        // remove from world elements
+        scene.worldElements.remove(player, true, true);
+    }
+
+    // update flag position if needed
 }
 
 function onFlagGrab(d, scene) {
