@@ -18,10 +18,10 @@ class Helper:
         
         # team data: color -> numPlayers, totalScore, flagPosition
         self.teamData = {
-            "red": {"numPlayers": 0, "score": 0, "flagPosition": {"x": self.padding, "y": self.padding}},
-            "blue": {"numPlayers": 0, "score": 0, "flagPosition": {"x": self.worldSize - self.padding, "y": self.padding}},
-            "yellow": {"numPlayers": 0, "score": 0, "flagPosition": {"x": self.padding, "y": self.worldSize - self.padding}},
-            "green": {"numPlayers": 0, "score": 0, "flagPosition": {"x": self.worldSize - self.padding, "y": self.worldSize - self.padding}},
+            "red": {"numPlayers": 0, "score": 0, "flagPosition": {"x": self.padding, "y": self.padding}, "basePosition": {"x": self.padding, "y": self.padding}},
+            "blue": {"numPlayers": 0, "score": 0, "flagPosition": {"x": self.worldSize - self.padding, "y": self.padding}, "basePosition": {"x": self.worldSize - self.padding, "y": self.padding}},
+            "yellow": {"numPlayers": 0, "score": 0, "flagPosition": {"x": self.padding, "y": self.worldSize - self.padding}, "basePosition": {"x": self.padding, "y": self.worldSize - self.padding}},
+            "green": {"numPlayers": 0, "score": 0, "flagPosition": {"x": self.worldSize - self.padding, "y": self.worldSize - self.padding}, "basePosition": {"x": self.worldSize - self.padding, "y": self.worldSize - self.padding}},
         }
 
     def leastPlayersTeam(self):
@@ -29,7 +29,7 @@ class Helper:
         return min(self.teamData, key=lambda team: self.teamData[team]['numPlayers'])
     
     def getSpawnPosition(self, teamKey):
-        basePosition = self.teamData[teamKey]["flagPosition"]
+        basePosition = self.teamData[teamKey]["basePosition"]
 
         # set x and y to some offset within self.padding from the team's base
         spawn = {"x": 0, "y": 0}
@@ -93,4 +93,4 @@ class Helper:
         return leaveData
 
     def resetFlag(self, color):
-        pass
+        self.teamData[color]["flagPosition"] = self.teamData[color]["basePosition"]

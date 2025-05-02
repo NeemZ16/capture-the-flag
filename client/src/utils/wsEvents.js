@@ -29,6 +29,10 @@ export function connectWS(scene) {
     scene.ws.on(SOCKET_EVENTS.PLAYER_LEFT, d => {
         onLeave(d, scene);
     })
+
+    scene.ws.on(SOCKET_EVENTS.FLAG_TAKEN, d => {
+        onFlagGrab(d, scene);
+    })
 }
 
 function onInit(d, scene) {
@@ -87,10 +91,19 @@ function onLeave(d, scene) {
     }
 
     // update flag position if needed
+    for (const color in teamData) {
+        const colorCode = COLOR[color];
+        const data = teamData[color];
+
+        // if flag not taken
+        if (data.flagPosition) {
+            scene.createFlag(data.flagPosition, color, colorCode);
+        }
+    }
 }
 
 function onFlagGrab(d, scene) {
-
+    scene.pickupFlag(d.color, d.username)
 }
 
 function onFlagScore(d, scene) {

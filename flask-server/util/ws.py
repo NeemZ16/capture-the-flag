@@ -28,10 +28,11 @@ def broadcastLeave():
 
 @socketio.on("flag_taken")
 def broadcastFlagTaken(data):
-    
+    # update game state
+    helper.teamData[data["color"]]["flagPosition"] = None
+    helper.players[data["username"]]["hasFlag"] = True
+    helper.flagPossession[data["username"]] = data["color"]
 
-    # TODO: update teamData flag position
-    # TODO: update players hasFlag
     socketio.emit("flag_taken", data, include_self=False)
     
     

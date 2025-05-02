@@ -139,6 +139,9 @@ export class Game extends BaseScene {
     }
 
     createFlag(position, color, colorCode) {
+        // if flag already exists do not create
+        if (this.flags[color]) return;
+
         const flag = this.add.image(position.x, position.y, 'flag')
             .setScale(2).setTint(colorCode);
         this.flags[color] = flag;
