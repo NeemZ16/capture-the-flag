@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Login from './pages/Login';
 import Register from './pages/Register';
 import GamePage from './pages/GamePage';
+import Profile from './pages/Profile';
 import 'bootstrap/dist/css/bootstrap.min.css';
 //import './assets/styles/index.css';
 import './assets/styles/style.css';
@@ -46,7 +47,8 @@ function App() {
 
         {/* if user is at the GamePage and are not logged in, force them to Login*/}
         <Route path="/game" element={ username ? <GamePage username={username} setUsername={setUsername} /> : <Navigate to="/" replace />} /> {/* will use username and setUsername on game page*/}
-
+        <Route path="/profile" element={<Profile username={username} />} />
+        
       </Routes>
     </Router>
   );

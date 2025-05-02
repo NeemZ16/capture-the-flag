@@ -4,6 +4,7 @@ WORKDIR /app
 
 # copy and install dependencies
 COPY ./flask-server/requirements.txt requirements.txt
+COPY ./flask-server/static/ /app/static/
 RUN pip install -r requirements.txt
 
 # copy source files
