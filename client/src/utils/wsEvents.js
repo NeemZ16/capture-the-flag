@@ -44,6 +44,11 @@ function onInit(d, scene) {
     }
 
     // generate flags
+    for (const color in teamData) {
+        const colorCode = COLOR[color];
+        const data = teamData[color];
+        scene.createFlag(data.flagPosition, color, colorCode);
+    }
 }
 
 function onJoin(d, scene) {

@@ -151,6 +151,13 @@ export class Game extends BaseScene {
         this.worldElements.add(otherPlayer);
     }
 
+    createFlag(position, color, colorCode) {
+        const flag = this.add.image(position.x, position.y, 'flag')
+            .setScale(2).setTint(colorCode);
+        this.flags[color] = flag;
+        this.worldElements.add(flag);
+    }
+
     create() {
         // set up cameras containers and groups
         this.worldSize = 2000;
@@ -160,6 +167,7 @@ export class Game extends BaseScene {
         this.uiCamera.ignore(this.worldElements);
         this.cameras.main.ignore(this.uiElements);
         this.otherPlayers = {};
+        this.flags = {};
 
         // initialize functions
         this.createBg();
