@@ -16,6 +16,7 @@ def initWs():
     socketio.emit("init", {
         "players" : helper.players,
         "teamData": helper.teamData,
+        "flagPossession": helper.flagPossession
     })
 
 @socketio.on("move")

@@ -69,8 +69,9 @@ class Helper:
     
     def removePlayer(self, sid):
         '''
-        Remove player from players.
-        Update team count and score.
+        Remove player from players.  
+        Update team count and score.  
+        Reset flags if needed
         '''
         # remove player and connection
         disconnectedUsername = self.connections.pop(sid)
@@ -79,6 +80,7 @@ class Helper:
         # reset flag if player has
         if (disconnectedPlayer["hasFlag"]):
             self.resetFlag(self.flagPossession[disconnectedUsername])
+            self.flagPossession.pop(disconnectedUsername)
 
         # update team data
         self.teamData[disconnectedPlayer["color"]]["score"] -= disconnectedPlayer["score"]

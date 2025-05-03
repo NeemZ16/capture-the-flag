@@ -43,9 +43,17 @@ function onInit(d, scene) {
     for (const username in allPlayers) {
         if (username !== scene.game.username && !(username in scene.otherPlayers)) {
             const player = allPlayers[username];
-            scene.createOtherPlayer(player.position.x, player.position.y, username, COLOR[player.color]);
+            scene.createOtherPlayer(
+                player.position.x, 
+                player.position.y, 
+                username, 
+                COLOR[player.color],
+            );
         }
     }
+
+    // update flags carried by players
+    updatePlayerFlags(d.flagPossession, scene);
 
     // generate flags
     for (const color in teamData) {
@@ -91,7 +99,7 @@ function onLeave(d, scene) {
     }
 
     // update flag position if needed
-    for (const color in teamData) {
+    for (const color in d.teamData) {
         const colorCode = COLOR[color];
         const data = teamData[color];
 
@@ -108,4 +116,40 @@ function onFlagGrab(d, scene) {
 
 function onFlagScore(d, scene) {
 
+}
+
+/**
+ * If a player is carrying a flag and someone else refreshes, that player no longer has a flag on redraw.
+ * This adds back the flags on refresh since backend is sending flagPossession dict on init
+ * @param {*} flagData - flagPossession dict from backend. maps username to flag color if carried
+ * @param {*} scene - game scene passed from onInit function
+ */
+function updatePlayerFlags(flagData, scene) {
+    for (const [username, flagColor] of Object.entries(flagData)) {
+        // if self then continue -- you already have the flag
+        if (username === scene.game.username) continue;
+
+        // get player to update
+        const playerToUpdate = scene.otherPlayers[username]
+        if (!playerToUpdate) {
+            console.error("PLAYER NOT FOUND");
+            console.log(scene.otherPlayers);
+            console.log("finding username:", username);
+            console.log(scene.otherPlayers[username]);
+        }
+        if (playerToUpdate.carriedFlag) continue;
+
+        // update player object to have flag
+        const flagSprite = scene.add.image(0, 0, 'flag')
+            .setScale(1.2)
+            .setTint(COLOR[flagColor])
+            .setAngle(45)
+            .setOrigin(0.5)
+            .setPosition(40, 15);
+
+        playerToUpdate.add(flagSprite);
+
+        // store reference to flag
+        playerToUpdate.carriedFlag = flagSprite;
+    }
 }

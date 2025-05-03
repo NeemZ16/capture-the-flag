@@ -127,11 +127,11 @@ export class Game extends BaseScene {
         sprite.fillStyle(playerColor, 1);
         sprite.fillCircle(radius, radius, radius);
         otherPlayer.add(sprite);
-
+        
         // create player name centered over sprite
         const name = this.add.bitmapText(radius, -radius, 'pixel', username, 12).setOrigin(0.5);
         otherPlayer.add(name);
-
+        
         // store in player dict
         otherPlayer.username = username;
         this.otherPlayers[username] = otherPlayer;
@@ -157,7 +157,7 @@ export class Game extends BaseScene {
         if (this.player.carriedFlag) return;
 
         // set threshold distance for pickup
-        const pickupThreshold = 30;
+        const pickupThreshold = 40;
 
         // iterate through this.flags
         for (const [color, flag] of Object.entries(this.flags)) {
@@ -185,7 +185,7 @@ export class Game extends BaseScene {
      * @param {*} color - as string
      * @param {*} username - of player with flag
      */
-    pickupFlag(color, username) {        
+    pickupFlag(color, username) {
         // remove flag
         const flag = this.flags[color];
         if (!flag) return;
