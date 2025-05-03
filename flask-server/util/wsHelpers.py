@@ -18,10 +18,30 @@ class Helper:
         
         # team data: color -> numPlayers, totalScore, flagPosition
         self.teamData = {
-            "red": {"numPlayers": 0, "score": 0, "flagPosition": {"x": self.padding, "y": self.padding}, "basePosition": {"x": self.padding, "y": self.padding}},
-            "blue": {"numPlayers": 0, "score": 0, "flagPosition": {"x": self.worldSize - self.padding, "y": self.padding}, "basePosition": {"x": self.worldSize - self.padding, "y": self.padding}},
-            "yellow": {"numPlayers": 0, "score": 0, "flagPosition": {"x": self.padding, "y": self.worldSize - self.padding}, "basePosition": {"x": self.padding, "y": self.worldSize - self.padding}},
-            "green": {"numPlayers": 0, "score": 0, "flagPosition": {"x": self.worldSize - self.padding, "y": self.worldSize - self.padding}, "basePosition": {"x": self.worldSize - self.padding, "y": self.worldSize - self.padding}},
+            "red": {
+                "numPlayers": 0, 
+                "score": 0, 
+                "flagPosition": {"x": self.padding, "y": self.padding}, 
+                "basePosition": {"x": self.padding, "y": self.padding}
+            },
+            "blue": {
+                "numPlayers": 0, 
+                "score": 0, 
+                "flagPosition": {"x": self.worldSize - self.padding, "y": self.padding}, 
+                "basePosition": {"x": self.worldSize - self.padding, "y": self.padding}
+            },
+            "yellow": {
+                "numPlayers": 0, 
+                "score": 0, 
+                "flagPosition": {"x": self.padding, "y": self.worldSize - self.padding}, 
+                "basePosition": {"x": self.padding, "y": self.worldSize - self.padding}
+            },
+            "green": {
+                "numPlayers": 0, 
+                "score": 0, 
+                "flagPosition": {"x": self.worldSize - self.padding, "y": self.worldSize - self.padding}, 
+                "basePosition": {"x": self.worldSize - self.padding, "y": self.worldSize - self.padding}
+            },
         }
 
     def leastPlayersTeam(self):

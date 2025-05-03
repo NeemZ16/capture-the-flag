@@ -14,6 +14,7 @@ export class Game extends BaseScene {
     createBg() {
         const gridSize = this.worldSize;
         const cellSize = 50;
+        const padding = 200; // base padding defined in wsHelpers.py
 
         this.cameras.main.setBackgroundColor(0x1e1e1e);
         this.cameras.main.setBounds(0, 0, this.worldSize, this.worldSize);
@@ -29,6 +30,26 @@ export class Game extends BaseScene {
         for (let y = 0; y <= gridSize; y += cellSize) {
             graphics.lineBetween(0, y, gridSize, y);
         }
+
+        // Draw base squares
+        const baseSize = 40;
+        const halfSize = baseSize / 2;
+
+        const basePositions = [
+            { x: padding, y: padding }, // red
+            { x: this.worldSize - padding, y: padding }, // blue
+            { x: padding, y: this.worldSize - padding }, // yellow
+            { x: this.worldSize - padding, y: this.worldSize - padding } // green
+        ];
+
+        const baseColors = [0xff5555, 0x5555ff, 0xffff55, 0x55ff55]; // red, blue, yellow, green
+
+        basePositions.forEach((pos, index) => {
+            graphics.fillStyle(baseColors[index], 0.5);
+            graphics.fillRect(pos.x - halfSize, pos.y - halfSize, baseSize, baseSize);
+            graphics.lineStyle(2, 0x777777, 1); // 2px thick gray border
+            graphics.strokeRect(pos.x - halfSize, pos.y - halfSize, baseSize, baseSize);
+        });
 
         graphics.setDepth(-1);
         this.worldElements.add(graphics);
@@ -127,11 +148,11 @@ export class Game extends BaseScene {
         sprite.fillStyle(playerColor, 1);
         sprite.fillCircle(radius, radius, radius);
         otherPlayer.add(sprite);
-        
+
         // create player name centered over sprite
         const name = this.add.bitmapText(radius, -radius, 'pixel', username, 12).setOrigin(0.5);
         otherPlayer.add(name);
-        
+
         // store in player dict
         otherPlayer.username = username;
         this.otherPlayers[username] = otherPlayer;
