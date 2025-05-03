@@ -119,7 +119,6 @@ function onFlagGrab(d, scene) {
 }
 
 function onFlagScore(d, scene) {
-    console.log("FLAG SCORE DATA:", d);
     scene.dropoffFlag(d.color, d.username);
 }
 
@@ -136,12 +135,6 @@ function updatePlayerFlags(flagData, scene) {
 
         // get player to update
         const playerToUpdate = scene.otherPlayers[username]
-        if (!playerToUpdate) {
-            console.error("PLAYER NOT FOUND");
-            console.log(scene.otherPlayers);
-            console.log("finding username:", username);
-            console.log(scene.otherPlayers[username]);
-        }
         if (playerToUpdate.carriedFlag) continue;
 
         // update player object to have flag

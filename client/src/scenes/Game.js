@@ -284,7 +284,6 @@ export class Game extends BaseScene {
         playerToUpdate.flagColor = null;
 
         // create flag at base
-        console.log(color, this.basePositions)
         this.createFlag(this.basePositions[color], color, COLOR[color])
     }
 
