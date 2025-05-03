@@ -111,7 +111,7 @@ def _strip_auth(hdrs: dict[str, str]) -> dict[str, str]:
     for k, v in hdrs.items():
         # Convert header name to lowercase
         lk = k.lower()
-        if lk == "authorization":
+        if lk in ("authorization", "set-cookie"):
             # skip Authorization header completely
             continue
         if lk == "cookie":
