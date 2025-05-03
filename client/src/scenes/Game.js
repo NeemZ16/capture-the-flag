@@ -32,24 +32,29 @@ export class Game extends BaseScene {
         }
 
         // Draw base squares
-        const baseSize = 40;
+        const baseSize = 50;
         const halfSize = baseSize / 2;
 
-        const basePositions = [
-            { x: padding, y: padding }, // red
-            { x: this.worldSize - padding, y: padding }, // blue
-            { x: padding, y: this.worldSize - padding }, // yellow
-            { x: this.worldSize - padding, y: this.worldSize - padding } // green
-        ];
+        this.basePositions = {
+            red: { x: padding, y: padding },
+            blue: { x: this.worldSize - padding, y: padding },
+            yellow: { x: padding, y: this.worldSize - padding },
+            green: { x: this.worldSize - padding, y: this.worldSize - padding }
+        };
 
-        const baseColors = [0xff5555, 0x5555ff, 0xffff55, 0x55ff55]; // red, blue, yellow, green
+        const baseColors = {
+            red: 0xff5555,
+            blue: 0x5555ff,
+            yellow: 0xffff55,
+            green: 0x55ff55
+        };
 
-        basePositions.forEach((pos, index) => {
-            graphics.fillStyle(baseColors[index], 0.5);
+        for (const [color, pos] of Object.entries(this.basePositions)) {
+            graphics.fillStyle(baseColors[color], 0.5);
             graphics.fillRect(pos.x - halfSize, pos.y - halfSize, baseSize, baseSize);
-            graphics.lineStyle(2, 0x777777, 1); // 2px thick gray border
+            graphics.lineStyle(2, 0x777777, 1); // Gray border
             graphics.strokeRect(pos.x - halfSize, pos.y - halfSize, baseSize, baseSize);
-        });
+        }
 
         graphics.setDepth(-1);
         this.worldElements.add(graphics);
@@ -174,9 +179,6 @@ export class Game extends BaseScene {
      * Call pickup method and emit `flag_taken` event.
      */
     checkFlagPickup() {
-        // if player already has flag, don't pick up
-        if (this.player.carriedFlag) return;
-
         // set threshold distance for pickup
         const pickupThreshold = 40;
 
@@ -203,8 +205,8 @@ export class Game extends BaseScene {
 
     /**
      * Handles rendering changes for flag pickup
-     * @param {*} color - as string
-     * @param {*} username - of player with flag
+     * @param {string} color - of flag
+     * @param {string} username - of player with flag
      */
     pickupFlag(color, username) {
         // remove flag
@@ -233,6 +235,57 @@ export class Game extends BaseScene {
 
         // store reference to flag
         playerToUpdate.carriedFlag = flagSprite;
+        playerToUpdate.flagColor = color;
+    }
+
+    /**
+     * Check whether own player is within flag dropoff distance from home base.
+     * Call dropoff method and emit `flag_scored` event.
+     */
+    checkFlagDropoff() {
+        const dropoffThreshold = 40;
+
+        // get player base position
+        const homeBase = this.basePositions[this.player.teamColor];
+
+        // check this.player distance from home base
+        const dx = this.player.x - homeBase.x;
+        const dy = this.player.y - homeBase.y;
+        const distance = Math.hypot(dx, dy);
+        if (distance < dropoffThreshold) {
+            // send username to backend, which should then 
+            // calculate which flag was scored through flagPossessions
+            this.ws.emit('flag_scored', {
+                color: this.player.flagColor,
+                username: this.game.username
+            });
+            
+            this.dropoffFlag(this.player.flagColor, this.game.username);
+        }
+    }
+
+    /**
+     * Handles rendering changes for flag pickup
+     * @param {string} color - of flag
+     * @param {string} username - of player dropping off flag
+     */
+    dropoffFlag(color, username) {
+        // get player with username
+        let playerToUpdate;
+        if (username === this.game.username) {
+            playerToUpdate = this.player;
+        } else {
+            playerToUpdate = this.otherPlayers[username];
+        }
+        
+        // remove flag sprite
+        playerToUpdate.carriedFlag.destroy();
+        playerToUpdate.carriedFlag = null;
+        playerToUpdate.flagColor = null;
+
+        // create flag at base
+        console.log(color, this.basePositions)
+        this.createFlag(this.basePositions[color], color, COLOR[color])
     }
 
     create() {
@@ -303,7 +356,13 @@ export class Game extends BaseScene {
                     y: this.player.y
                 }
             })
-            this.checkFlagPickup();
+
+            // check flag logic
+            if (this.player.carriedFlag) {
+                this.checkFlagDropoff();
+            } else {
+                this.checkFlagPickup();
+            }
         }
     }
 

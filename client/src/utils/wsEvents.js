@@ -33,6 +33,10 @@ export function connectWS(scene) {
     scene.ws.on(SOCKET_EVENTS.FLAG_TAKEN, d => {
         onFlagGrab(d, scene);
     })
+
+    scene.ws.on(SOCKET_EVENTS.FLAG_SCORED, d => {
+        onFlagScore(d, scene);
+    })
 }
 
 function onInit(d, scene) {
@@ -101,7 +105,7 @@ function onLeave(d, scene) {
     // update flag position if needed
     for (const color in d.teamData) {
         const colorCode = COLOR[color];
-        const data = teamData[color];
+        const data = d.teamData[color];
 
         // if flag not taken
         if (data.flagPosition) {
@@ -111,11 +115,12 @@ function onLeave(d, scene) {
 }
 
 function onFlagGrab(d, scene) {
-    scene.pickupFlag(d.color, d.username)
+    scene.pickupFlag(d.color, d.username);
 }
 
 function onFlagScore(d, scene) {
-
+    console.log("FLAG SCORE DATA:", d);
+    scene.dropoffFlag(d.color, d.username);
 }
 
 /**

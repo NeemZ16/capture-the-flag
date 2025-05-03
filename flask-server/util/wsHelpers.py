@@ -99,6 +99,7 @@ class Helper:
 
         # reset flag if player has
         if (disconnectedPlayer["hasFlag"]):
+            print("FLAG POSSESSION:", self.flagPossession)
             self.resetFlag(self.flagPossession[disconnectedUsername])
             self.flagPossession.pop(disconnectedUsername)
 
