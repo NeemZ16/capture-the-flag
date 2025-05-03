@@ -30,6 +30,7 @@ export class Preloader extends BaseScene {
         //  Load the assets for the game - Replace with your own assets
         this.load.setPath('assets');
         this.load.image('logo', 'logo.png');
+        this.load.image('flag', 'flag.png');
     }
 
     create() {

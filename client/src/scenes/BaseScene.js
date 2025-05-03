@@ -59,6 +59,20 @@ export class BaseScene extends Scene {
         return btn;
     }
 
+    handleLogout() {
+        const url = import.meta.env.VITE_API_URL + "logout";
+        fetch(url, {
+            method: 'POST',
+            credentials: 'include', // will include the auth_token cookie
+        })
+            .then((res) => res.text().then((text) => ({ status: res.status, text })))
+            .then(({ status, text }) => {
+                // reset username and reload should go to main menu
+                this.game.username = null;
+                window.location.reload();
+            })
+    }
+
     /**
      * Asynchronous function to ping /me and check if logged in.
      * Called in preloader to automatically change from main menu to game.
