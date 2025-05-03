@@ -29,28 +29,53 @@ export function connectWS(scene) {
     scene.ws.on(SOCKET_EVENTS.PLAYER_LEFT, d => {
         onLeave(d, scene);
     })
+
+    scene.ws.on(SOCKET_EVENTS.FLAG_TAKEN, d => {
+        onFlagGrab(d, scene);
+    })
+
+    scene.ws.on(SOCKET_EVENTS.FLAG_SCORED, d => {
+        onFlagScore(d, scene);
+    })
 }
 
 function onInit(d, scene) {
     const allPlayers = d.players;
     const teamData = d.teamData;
-    
+
     // create players for d.players
     for (const username in allPlayers) {
         if (username !== scene.game.username && !(username in scene.otherPlayers)) {
             const player = allPlayers[username];
-            scene.createOtherPlayer(player.position.x, player.position.y, username, COLOR[player.color]);
+            scene.createOtherPlayer(
+                player.position.x, 
+                player.position.y, 
+                username, 
+                COLOR[player.color],
+            );
         }
     }
 
+    // update flags carried by players
+    updatePlayerFlags(d.flagPossession, scene);
+
     // generate flags
+    for (const color in teamData) {
+        const colorCode = COLOR[color];
+        const data = teamData[color];
+
+        // if flag not taken
+        if (data.flagPosition) {
+            scene.createFlag(data.flagPosition, color, colorCode);
+        }
+    }
 }
 
 function onJoin(d, scene) {
     // expecting d.color to be string color name
     if (d.username === scene.game.username) {
-        scene.createPlayer(d.position.x, d.position.y, d.username, COLOR[d.color]);
-    } else if (!(d.username in scene.otherPlayers)){
+        scene.createPlayer(d.position.x, d.position.y, d.username, COLOR[d.color], d.color);
+    } else if (!(d.username in scene.otherPlayers)) {
         scene.createOtherPlayer(d.position.x, d.position.y, d.username, COLOR[d.color]);
     }
 }
@@ -78,12 +103,51 @@ function onLeave(d, scene) {
     }
 
     // update flag position if needed
+    for (const color in d.teamData) {
+        const colorCode = COLOR[color];
+        const data = d.teamData[color];
+
+        // if flag not taken
+        if (data.flagPosition) {
+            scene.createFlag(data.flagPosition, color, colorCode);
+        }
+    }
 }
 
 function onFlagGrab(d, scene) {
-
+    scene.pickupFlag(d.color, d.username);
 }
 
 function onFlagScore(d, scene) {
+    scene.dropoffFlag(d.color, d.username);
+}
 
+/**
+ * If a player is carrying a flag and someone else refreshes, that player no longer has a flag on redraw.
+ * This adds back the flags on refresh since backend is sending flagPossession dict on init
+ * @param {*} flagData - flagPossession dict from backend. maps username to flag color if carried
+ * @param {*} scene - game scene passed from onInit function
+ */
+function updatePlayerFlags(flagData, scene) {
+    for (const [username, flagColor] of Object.entries(flagData)) {
+        // if self then continue -- you already have the flag
+        if (username === scene.game.username) continue;
+
+        // get player to update
+        const playerToUpdate = scene.otherPlayers[username]
+        if (playerToUpdate.carriedFlag) continue;
+
+        // update player object to have flag
+        const flagSprite = scene.add.image(0, 0, 'flag')
+            .setScale(1.2)
+            .setTint(COLOR[flagColor])
+            .setAngle(45)
+            .setOrigin(0.5)
+            .setPosition(40, 15);
+
+        playerToUpdate.add(flagSprite);
+
+        // store reference to flag
+        playerToUpdate.carriedFlag = flagSprite;
+    }
 }

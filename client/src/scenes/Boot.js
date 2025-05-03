@@ -11,7 +11,6 @@ export class Boot extends Scene {
         this.load.bitmapFont('pixel', 'assets/fonts/carrier_command.png', 'assets/fonts/carrier_command.xml');
         this.load.font('Jersey 10', 'assets/fonts/Jersey10-Regular.ttf', 'truetype');
 
-        this.load.image('background', 'assets/bg.png');
         this.load.image('logo', 'assets/logo.png');
     }
 
