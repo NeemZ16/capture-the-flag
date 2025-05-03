@@ -1,15 +1,20 @@
-from util.database import user_collection, auth_token_collection
+from util.database import user_collection, auth_token_collection, salt_collection
 from flask_restful import Resource
-from flask import request, jsonify, make_response
+from flask import request, make_response
 import re
 import bcrypt
 import uuid
 import secrets
 import hashlib
 import html
-from datetime import datetime, timedelta
 
-salt = b'$2b$12$ZN.yq1rc10ttyUtJENwquO'
+if salt_collection.count_documents({}) == 0:
+    salt = bcrypt.gensalt()
+    salt_collection.insert_one({'salt': salt})
+else:
+    result = salt_collection.find_one()
+    salt = result["salt"]
+
 
 class Register(Resource):
 
