@@ -106,6 +106,25 @@ export class Game extends BaseScene {
     }
 
     /**
+     * Create score board on right for team scores.  
+     * Create player listing on left with player scores.
+     */
+    createScoreboards() {
+        // team scores should have same background as nav 0x555, 0.5 alpha
+        const teamScoresWidth = 75;
+        this.teamScores = this.add.container(
+            this.dimensions.width - teamScoresWidth,
+            this.dimensions.height / 4
+        );
+
+        // player listing should be a container with transparent background
+        this.playerListings = this.add.container(
+            0,
+            this.dimensions.height / 4
+        );
+    }
+
+    /**
      * Creates own player object with username above it.
      */
     createPlayer(x, y, username, playerColor, teamColor) {
