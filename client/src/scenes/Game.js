@@ -1,6 +1,7 @@
 import { SOCKET_EVENTS, COLOR } from '../utils/gameConstants';
 import { BaseScene } from './BaseScene';
 import { connectWS } from '../utils/wsEvents';
+import { PlayerScoreList } from '../utils/scoreUtils';
 
 
 export class Game extends BaseScene {
@@ -121,8 +122,7 @@ export class Game extends BaseScene {
         );
 
         const teamScoresBg = this.add.rectangle(
-            0,
-            0,
+            0, 0,
             teamScoresWidth,
             squareSize * 4 + padding * 5,
             0x555555,
@@ -159,15 +159,14 @@ export class Game extends BaseScene {
                 '0',
                 12
             ).setOrigin(0.5);
+
             this.teamScores.add(scoreText);
-
             this.teamScoreValues[team] = scoreText;
-
             index++;
         }
 
         // player listing should be a container with transparent background
-        const playerListingsWidth = 150;
+        const playerListingsWidth = 175;
         const playerListingsHeight = 400;
         this.playerListings = this.add.container(
             0,
@@ -175,8 +174,7 @@ export class Game extends BaseScene {
         );
 
         const playerListingsBg = this.add.rectangle(
-            0,
-            0,
+            0, 0,
             playerListingsWidth,
             playerListingsHeight,
             0x555555,
@@ -370,6 +368,7 @@ export class Game extends BaseScene {
             playerToUpdate = this.player;
             const currentScore = parseInt(this.teamScoreValues[this.player.teamColor].text);
             this.teamScoreValues[this.player.teamColor].setText((currentScore + 1).toString());
+            this.playerScoreList.updateScore(username, currentScore + 1, color);
         } else {
             playerToUpdate = this.otherPlayers[username];
         }
@@ -400,6 +399,7 @@ export class Game extends BaseScene {
         this.createNav();
         connectWS(this);
         this.createScoreboards();
+        this.playerScoreList = new PlayerScoreList(this, this.playerListings);
 
         // initialize interaction
         this.cursors = this.input.keyboard.createCursorKeys();

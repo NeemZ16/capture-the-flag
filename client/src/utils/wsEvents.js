@@ -53,6 +53,8 @@ function onInit(d, scene) {
                 username, 
                 COLOR[player.color],
             );
+
+            scene.playerScoreList.add(username, allPlayers[username].score, allPlayers[username].color);
         }
     }
 
@@ -81,6 +83,8 @@ function onJoin(d, scene) {
     } else if (!(d.username in scene.otherPlayers)) {
         scene.createOtherPlayer(d.position.x, d.position.y, d.username, COLOR[d.color]);
     }
+    
+    scene.playerScoreList.add(d.username, 0, d.color);
 }
 
 function onMove(d, scene) {
@@ -103,6 +107,9 @@ function onLeave(d, scene) {
 
         // remove from world elements
         scene.worldElements.remove(player, true, true);
+
+        // remove from player scoreboard
+        scene.playerScoreList.remove(d.username);
     }
 
     // update flag position and score if needed
@@ -126,6 +133,7 @@ function onFlagGrab(d, scene) {
 function onFlagScore(d, scene) {
     scene.dropoffFlag(d.color, d.username);
     scene.teamScoreValues[d.teamScore[0]].setText(d.teamScore[1].toString());
+    scene.playerScoreList.updateScore(d.username, d.playerScore, d.color);
 }
 
 /**
