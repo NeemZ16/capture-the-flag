@@ -87,7 +87,22 @@ export class Game extends BaseScene {
             fontFamily: '"Jersey 10"',
             fontSize: 40
         })
-            .setOrigin(0, 0.5); // left align
+            .setOrigin(0, 0.5) // left align
+            .setInteractive({ cursor: 'pointer' });
+
+        welcomeText.on('pointerover', () => {
+            welcomeText.setStyle({ color: '#FFC20C' });
+        });
+
+        welcomeText.on('pointerout', () => {
+            welcomeText.setStyle({ color: '#FFFFFF' });
+        });
+
+        welcomeText.on('pointerdown', () => {
+            // reloading goes back to profile and resets game stuff
+            window.location.reload();
+        });
+
         this.uiElements.add(welcomeText);
     }
 

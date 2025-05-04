@@ -42,7 +42,7 @@ export class Preloader extends BaseScene {
 
             if (isLoggedIn) {
                 this.game.username = username;
-                this.scene.start('Game');
+                this.scene.start('Profile');
             } else {
                 this.scene.start('MainMenu');
             }

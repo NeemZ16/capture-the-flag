@@ -5,6 +5,7 @@ import { MainMenu } from './scenes/MainMenu';
 import { Preloader } from './scenes/Preloader';
 import { Login } from './scenes/Login';
 import { Register } from './scenes/Register';
+import { Profile } from './scenes/Profile';
 
 const config = {
     type: Phaser.AUTO,
@@ -32,6 +33,7 @@ const config = {
         Boot,
         Preloader,
         MainMenu,
+        Profile,
         Game,
         GameOver,
         Login,

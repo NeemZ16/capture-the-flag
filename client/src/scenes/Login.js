@@ -10,7 +10,7 @@ export class Login extends BaseScene {
         this.isLoggedIn().then(([isLoggedIn, username]) => {
             if (isLoggedIn) {
                 this.game.username = username;
-                this.scene.start('Game');
+                this.scene.start('Profile');
             }
         });
 

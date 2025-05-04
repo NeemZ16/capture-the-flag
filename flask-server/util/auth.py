@@ -9,7 +9,7 @@ import hashlib
 import html
 from datetime import datetime, timedelta
 
-salt = b'$2b$12$ZN.yq1rc10ttyUtJENwquO'
+salt = bcrypt.gensalt()
 
 class Register(Resource):
 
@@ -55,14 +55,12 @@ class Login(Resource):
         safe_username = html.escape(username)
         safe_password = html.escape(password)
         
-        hashed_pw = bcrypt.hashpw(safe_password.encode(), salt)
+        user_info = user_collection.find_one({"username": safe_username})
 
-        user_info = user_collection.find_one({"username": safe_username, "password": hashed_pw})
-
-        if user_info is None:
+        if user_info is None or not bcrypt.checkpw(safe_password.encode(), user_info["password"]):
             return init_response("Incorrect username or password", 401)
 
-        auth_token = secrets.token_hex(16)
+        auth_token = secrets.token_urlsafe(32)
         hashed_token = hashlib.sha256(auth_token.encode()).hexdigest()
 
         # expire as int enough to set cookie
