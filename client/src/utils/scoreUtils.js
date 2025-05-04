@@ -1,33 +1,51 @@
-// FUNCTIONS TO HANDLE UPDATING PLAYER SCORES
-
 import { COLOR } from "./gameConstants";
 
-export function createPlayerScoreItem(username, score, color) {
-    if (username in this.playerScoreItems) return;
-    const index = Object.keys(this.playerScoreItems).length;
-    const scoreItemHeight = 20
-    const y = 4 + index * (scoreItemHeight + 4);
+export class PlayerScoreList {
+    constructor(scene, container, itemHeight = 20, padding = 4) {
+        this.scene = scene;
+        this.container = container;
+        this.itemHeight = itemHeight;
+        this.padding = padding;
+        this.items = new Map();
+    }
 
-    const playerListingsWidth = 175;
-    const itemContainer = this.add.container(0, y);
-    const nameText = this.add.bitmapText(5, 4, 'pixel', username, 12).setTint(COLOR[color]);
-    const scoreText = this.add.bitmapText(playerListingsWidth - 20, 4, 'pixel', score.toString(), 12);
+    add(username, score, color) {
+        if (this.items.has(username)) return;
 
-    itemContainer.add([nameText, scoreText]);
-    this.playerListings.add(itemContainer);
+        const y = this.padding + this.items.size * (this.itemHeight + this.padding);
+        const item = this.scene.add.container(0, y);
+        const nameText = this.scene.add.bitmapText(5, 4, 'pixel', username, 12).setTint(COLOR[color]);
+        const scoreText = this.scene.add.bitmapText(155, 4, 'pixel', score.toString(), 12);
+        item.add([nameText, scoreText]);
+        this.container.add(item);
 
-    this.playerScoreItems[username] = {
-        container: itemContainer,
-        scoreText
-    };
-}
+        this.items.set(username, { container: item, scoreText });
+    }
 
-export function removePlayerScoreItem(username, scene) {
+    remove(username) {
+        const entry = this.items.get(username);
+        if (!entry) return;
 
+        entry.container.destroy();
+        this.items.delete(username);
 
-}
+        // update position of other elements
+        let i = 0;
+        for (const { container } of this.items.values()) {
+            container.setY(this.padding + i * (this.itemHeight + this.padding));
+            i++;
+        }
+    }
 
-export function updatePlayerScoreItem(username, score, scene) {
-
-
+    updateScore(username, score, scoreColor) {
+        const entry = this.items.get(username);
+        const scoreStr = typeof score === "number" ? score.toString() : score;
+        if (entry) entry.scoreText.setText(scoreStr);
+        
+        // flash in color scored
+        entry.scoreText.setTint(COLOR[scoreColor]);
+        this.scene.time.delayedCall(100, () => {
+            entry.scoreText.setTint(0xffffff);
+        });
+    }
 }

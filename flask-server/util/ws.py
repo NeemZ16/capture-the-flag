@@ -48,6 +48,7 @@ def broadcastFlagScored(data):
     playerTeam = helper.players[username]["color"]
     helper.teamData[playerTeam]["score"] += 1
     data["teamScore"] = [playerTeam, helper.teamData[playerTeam]["score"]]
+    data["playerScore"] = helper.teamData[playerTeam]["score"]
 
     # update flag possession and position
     flagColor = helper.flagPossession.pop(username)

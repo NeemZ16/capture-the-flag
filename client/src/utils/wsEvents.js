@@ -54,7 +54,7 @@ function onInit(d, scene) {
                 COLOR[player.color],
             );
 
-            scene.createPlayerScoreItem(username, allPlayers[username].score, allPlayers[username].color);
+            scene.playerScoreList.add(username, allPlayers[username].score, allPlayers[username].color);
         }
     }
 
@@ -84,7 +84,7 @@ function onJoin(d, scene) {
         scene.createOtherPlayer(d.position.x, d.position.y, d.username, COLOR[d.color]);
     }
     
-    scene.createPlayerScoreItem(d.username, 0, d.color);
+    scene.playerScoreList.add(d.username, 0, d.color);
 }
 
 function onMove(d, scene) {
@@ -130,6 +130,7 @@ function onFlagGrab(d, scene) {
 function onFlagScore(d, scene) {
     scene.dropoffFlag(d.color, d.username);
     scene.teamScoreValues[d.teamScore[0]].setText(d.teamScore[1].toString());
+    scene.playerScoreList.updateScore(d.username, d.playerScore, d.color);
 }
 
 /**
