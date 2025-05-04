@@ -146,16 +146,12 @@ export class Game extends BaseScene {
             const y = padding + index * (squareSize + padding);
         
             const scoreSq = this.add.rectangle(
-                x,
-                y,
-                squareSize,
-                squareSize,
-                colorCode,
-                0.25
+                x, y,
+                squareSize, squareSize,
+                colorCode, 0.25
             ).setOrigin(0);
             this.teamScores.add(scoreSq);
         
-            // BitmapText version
             const scoreText = this.add.bitmapText(
                 x + squareSize / 2,
                 y + squareSize / 2,
