@@ -5,6 +5,14 @@ export class Profile extends BaseScene {
         super('Profile');
     }
 
+    fetchProfileImg() {
+        
+    }
+
+    updateProfileImg() {
+
+    }
+
     create() {
         document.getElementById('profile-wrapper').style.display = 'block';
         document.getElementById('startGame').onclick = () => {
