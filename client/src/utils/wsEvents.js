@@ -107,6 +107,9 @@ function onLeave(d, scene) {
 
         // remove from world elements
         scene.worldElements.remove(player, true, true);
+
+        // remove from player scoreboard
+        scene.playerScoreList.remove(d.username);
     }
 
     // update flag position and score if needed
