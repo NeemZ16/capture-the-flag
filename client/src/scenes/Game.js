@@ -144,14 +144,14 @@ export class Game extends BaseScene {
         for (const [team, colorCode] of Object.entries(teamColors)) {
             const x = padding;
             const y = padding + index * (squareSize + padding);
-        
+
             const scoreSq = this.add.rectangle(
                 x, y,
                 squareSize, squareSize,
                 colorCode, 0.25
             ).setOrigin(0);
             this.teamScores.add(scoreSq);
-        
+
             const scoreText = this.add.bitmapText(
                 x + squareSize / 2,
                 y + squareSize / 2,
@@ -160,7 +160,7 @@ export class Game extends BaseScene {
                 12
             ).setOrigin(0.5);
             this.teamScores.add(scoreText);
-        
+
             this.teamScoreValues[team] = scoreText;
 
             index++;
@@ -368,6 +368,8 @@ export class Game extends BaseScene {
         let playerToUpdate;
         if (username === this.game.username) {
             playerToUpdate = this.player;
+            const currentScore = parseInt(this.teamScoreValues[this.player.teamColor].text);
+            this.teamScoreValues[this.player.teamColor].setText((currentScore + 1).toString());
         } else {
             playerToUpdate = this.otherPlayers[username];
         }

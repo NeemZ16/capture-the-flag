@@ -59,7 +59,7 @@ function onInit(d, scene) {
     // update flags carried by players
     updatePlayerFlags(d.flagPossession, scene);
 
-    // generate flags
+    // generate flags and scores
     for (const color in teamData) {
         const colorCode = COLOR[color];
         const data = teamData[color];
@@ -68,6 +68,9 @@ function onInit(d, scene) {
         if (data.flagPosition) {
             scene.createFlag(data.flagPosition, color, colorCode);
         }
+
+        // update team scores
+        scene.teamScoreValues[color].setText(data.score.toString());
     }
 }
 
@@ -102,7 +105,7 @@ function onLeave(d, scene) {
         scene.worldElements.remove(player, true, true);
     }
 
-    // update flag position if needed
+    // update flag position and score if needed
     for (const color in d.teamData) {
         const colorCode = COLOR[color];
         const data = d.teamData[color];
@@ -111,6 +114,8 @@ function onLeave(d, scene) {
         if (data.flagPosition) {
             scene.createFlag(data.flagPosition, color, colorCode);
         }
+
+        scene.teamScoreValues[color].setText(data.score.toString());
     }
 }
 
@@ -120,6 +125,7 @@ function onFlagGrab(d, scene) {
 
 function onFlagScore(d, scene) {
     scene.dropoffFlag(d.color, d.username);
+    scene.teamScoreValues[d.teamScore[0]].setText(d.teamScore[1].toString());
 }
 
 /**
