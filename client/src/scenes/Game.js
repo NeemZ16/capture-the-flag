@@ -106,6 +106,100 @@ export class Game extends BaseScene {
     }
 
     /**
+     * Create score board on right for team scores.  
+     * Create player listing on left with player scores.
+    */
+    createScoreboards() {
+        // team scores should have same background as nav 0x555, 0.5 alpha
+        const teamScoresWidth = 75;
+        const squareSize = 45;
+        const padding = (teamScoresWidth - squareSize) / 2;
+
+        this.teamScores = this.add.container(
+            this.dimensions.width - teamScoresWidth,
+            125
+        );
+
+        const teamScoresBg = this.add.rectangle(
+            0,
+            0,
+            teamScoresWidth,
+            squareSize * 4 + padding * 5,
+            0x555555,
+            0.15
+        ).setOrigin(0);
+
+        this.teamScores.add(teamScoresBg);
+        this.uiElements.add(this.teamScores);
+
+        // create colored squares for each team color
+        const teamColors = {
+            red: 0xff5555,
+            blue: 0x5555ff,
+            yellow: 0xffff55,
+            green: 0x55ff55
+        };
+
+        let index = 0;
+        for (const [team, colorCode] of Object.entries(teamColors)) {
+            const x = padding;
+            const y = padding + index * (squareSize + padding);
+
+            const scoreSq = this.add.rectangle(
+                x, y,
+                squareSize, squareSize,
+                colorCode, 0.25
+            ).setOrigin(0);
+            this.teamScores.add(scoreSq);
+
+            const scoreText = this.add.bitmapText(
+                x + squareSize / 2,
+                y + squareSize / 2,
+                'pixel',
+                '0',
+                12
+            ).setOrigin(0.5);
+            this.teamScores.add(scoreText);
+
+            this.teamScoreValues[team] = scoreText;
+
+            index++;
+        }
+
+        // player listing should be a container with transparent background
+        const playerListingsWidth = 150;
+        const playerListingsHeight = 400;
+        this.playerListings = this.add.container(
+            0,
+            125
+        );
+
+        const playerListingsBg = this.add.rectangle(
+            0,
+            0,
+            playerListingsWidth,
+            playerListingsHeight,
+            0x555555,
+            0.15
+        ).setOrigin(0);
+
+        this.playerListings.add(playerListingsBg);
+        this.uiElements.add(this.playerListings);
+    }
+
+    repositionScoreboards() {
+        const teamScoresWidth = 75;
+        this.teamScores.setPosition(
+            this.dimensions.width - teamScoresWidth,
+            125
+        );
+        this.playerListings.setPosition(
+            0,
+            125
+        );
+    }
+
+    /**
      * Creates own player object with username above it.
      */
     createPlayer(x, y, username, playerColor, teamColor) {
@@ -259,7 +353,7 @@ export class Game extends BaseScene {
                 color: this.player.flagColor,
                 username: this.game.username
             });
-            
+
             this.dropoffFlag(this.player.flagColor, this.game.username);
         }
     }
@@ -274,10 +368,12 @@ export class Game extends BaseScene {
         let playerToUpdate;
         if (username === this.game.username) {
             playerToUpdate = this.player;
+            const currentScore = parseInt(this.teamScoreValues[this.player.teamColor].text);
+            this.teamScoreValues[this.player.teamColor].setText((currentScore + 1).toString());
         } else {
             playerToUpdate = this.otherPlayers[username];
         }
-        
+
         // remove flag sprite
         playerToUpdate.carriedFlag.destroy();
         playerToUpdate.carriedFlag = null;
@@ -297,11 +393,13 @@ export class Game extends BaseScene {
         this.cameras.main.ignore(this.uiElements);
         this.otherPlayers = {};
         this.flags = {};
+        this.teamScoreValues = {};
 
         // initialize functions
         this.createBg();
         this.createNav();
         connectWS(this);
+        this.createScoreboards();
 
         // initialize interaction
         this.cursors = this.input.keyboard.createCursorKeys();
@@ -367,5 +465,6 @@ export class Game extends BaseScene {
 
     onResize() {
         this.repositionNavElements();
+        this.repositionScoreboards();
     }
 }
