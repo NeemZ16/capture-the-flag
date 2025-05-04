@@ -91,7 +91,6 @@ function onMove(d, scene) {
     // get username and position from d
     const { username, position } = d;
 
-
     //! const otherPlayer = this.add.container(x, y); from createOtherPlayer function
     // update that player's position
     const playerToMove = scene.otherPlayers[username];
@@ -134,25 +133,12 @@ function onFlagScore(d, scene) {
 
 function onPlayerKilled(d, scene) {
 
-    // each object kill 
-    console.log(d);
-
-    /* 
-    For every player except d.uername = scene.game.username
-    - respawn the killed player
-    */
-    if (d.username === scene.game.username){
-        scene.player.setPosition(d.position.x, d.position.y);
-    } else if (d.username in scene.otherPlayers) {
-        scene.killPlayer(d.username);
-        scene.createOtherPlayer(d.position.x, d.position.y, d.username, COLOR[d.color], d.color);
+    console.log(d.hasFlag+"--from wsEvents");
+    if (d.hasFlag){
+        scene.dropoffFlag(d.flagColor, d.username);
     }
-
-    // if (d.username === scene.game.username) {
-    //     scene.createPlayer(d.position.x, d.position.y, d.username, COLOR[d.color], d.color);
-    // } else if (!(d.username in scene.otherPlayers)) {
-    //     scene.createOtherPlayer(d.position.x, d.position.y, d.username, COLOR[d.color]);
-    // }
+    
+    scene.respawnPlayer(d.username, d.position);
 }
 
 /**

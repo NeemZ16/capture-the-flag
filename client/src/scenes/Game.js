@@ -114,6 +114,7 @@ export class Game extends BaseScene {
         // create player container
         this.player = this.add.container(x, y);
         this.player.teamColor = teamColor;
+        this.player.hasFlag = false;
 
         // create player object with circle
         const radius = 20;
@@ -149,6 +150,7 @@ export class Game extends BaseScene {
         // create player container
         const otherPlayer = this.add.container(x, y);
         otherPlayer.teamColor = teamColor;
+        otherPlayer.hasFlag = false;
         // create player object with circle
         const radius = 20;
         const sprite = this.add.graphics();
@@ -213,6 +215,7 @@ export class Game extends BaseScene {
      */
     pickupFlag(color, username) {
         // remove flag
+        //! flags = {color: flag_container}
         const flag = this.flags[color];
         if (!flag) return;
         flag.destroy();
@@ -239,6 +242,7 @@ export class Game extends BaseScene {
         // store reference to flag
         playerToUpdate.carriedFlag = flagSprite;
         playerToUpdate.flagColor = color;
+        playerToUpdate.hasFlag = true;
     }
 
     /**
@@ -285,6 +289,7 @@ export class Game extends BaseScene {
         playerToUpdate.carriedFlag.destroy();
         playerToUpdate.carriedFlag = null;
         playerToUpdate.flagColor = null;
+        playerToUpdate.hasFlag = false;
 
         // create flag at base
         this.createFlag(this.basePositions[color], color, COLOR[color])
@@ -293,52 +298,60 @@ export class Game extends BaseScene {
     checkKillAttempt() {
         const killThreshold = 40;
     
-        for (const [username, otherPlayer] of Object.entries(this.otherPlayers)) {
+        for (const [targetUsername, targetPlayer] of Object.entries(this.otherPlayers)) {
             
-            // if otherPlayer is the same team, don't proceed
-     
-            if (otherPlayer.teamColor === this.player.teamColor) continue;
+            // if targetPlayer is the same team, skip
+            if (targetPlayer.teamColor === this.player.teamColor) continue;
 
             // evaluate otherPlayer's distance
-            const dx = otherPlayer.x - this.player.x;
-            const dy = otherPlayer.y - this.player.y;
-            const distance = Math.hypot(dx, dy);
+            const x = targetPlayer.x - this.player.x;
+            const y = targetPlayer.y - this.player.y;
+            const distance = Math.hypot(x, y);
         
             if (distance < killThreshold) {
+
+                const targetColor = targetPlayer.teamColor;
+                const targetBasePosition = this.basePositions[targetColor];
+
+                // if target player has a flag, 
                 
+                console.log(targetPlayer.hasFlag + "--from Game.js");
+
+                let flagColor = null;
+                let hasFlag = false;
+                if (targetPlayer.hasFlag){
+                    flagColor = targetPlayer.flagColor;
+                    hasFlag = targetPlayer.hasFlag;
+                    this.dropoffFlag(targetPlayer.flagColor, targetUsername);
+                }
+
+                // send target player data to recreate them
                 this.ws.emit('player_killed', {
-                    username: username,
-                    color: otherPlayer.teamColor,
-                    position: this.basePositions[otherPlayer.teamColor]
+                    username: targetUsername,
+                    hasFlag: hasFlag,
+                    flagColor: flagColor,
+                    color: targetColor,
+                    position: targetBasePosition
                 });
-
+                
+                this.respawnPlayer(targetUsername, targetBasePosition);
+            
                 break;  // only kill one player per key press
-
-
-                // let color = otherPlayer.teamColor;
-                // if (otherPlayer.hasFlag === True) {
-                //     otherPlayer.carriedFlag.destroy();
-                //     otherPlayer.carriedFlag = null;
-                //     otherPlayer.flagColor = null;
-                //     this.createFlag(this.basePositions[color], color, COLOR[color])
-                // }
-
-                // After kill, respawn the killed user
             }
         }
     }
 
-    killPlayer(username) {
-        const playerToUpdate = this.otherPlayers[username];
-        if (!playerToUpdate) return;
+    respawnPlayer(targetUsername, targetBasePosition) {
+        let playerToUpdate;
+        if (targetUsername === this.game.username) {
+            playerToUpdate = this.player;
+        } else {
+            playerToUpdate = this.otherPlayers[targetUsername];
+        }
         
-        console.log(this.player.username, this.otherPlayers);
-
-        playerToUpdate.destroy();  // Remove from scene
-        delete this.otherPlayers[username];  // Remove from dictionary
-
-        console.log(this.player.username, this.otherPlayers);
-
+        playerToUpdate.setPosition(targetBasePosition.x, targetBasePosition.y)
+        // playerToUpdate.destroy();  // Remove from scene
+        // delete this.otherPlayers[targetUsername];  // Remove from dictionary
     }
 
     create() {

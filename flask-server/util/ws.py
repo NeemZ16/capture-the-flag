@@ -37,6 +37,7 @@ def broadcastLeave():
 
 @socketio.on("flag_taken")
 def broadcastFlagTaken(data):
+    #! data = {color, username}
     # update game state
     helper.teamData[data["color"]]["flagPosition"] = None
     helper.players[data["username"]]["hasFlag"] = True
@@ -47,6 +48,7 @@ def broadcastFlagTaken(data):
     
 @socketio.on("flag_scored")
 def broadcastFlagScored(data):
+    #! data = {color, username}
     # update player score and hasFlag
     username = data["username"]
     helper.players[username]["score"] += 1
@@ -60,14 +62,22 @@ def broadcastFlagScored(data):
     flagColor = helper.flagPossession.pop(username)
     helper.resetFlag(flagColor)
 
+    print(helper.teamData)
     # broadcast client data
     #! data = {color, username}
     socketio.emit("flag_scored", data, include_self=False)
     
 @socketio.on("player_killed")
 def killPlayer(data):
-    # data = {username:username, color: color}
-    socketio.emit("player_killed", data, include_self=True)
+    # data = {username, hasFlag, flagColor, color, position}
+
+    if data["hasFlag"]:
+        username = data["username"]
+        helper.players[username]["hasFlag"] = False
+        flagColor = helper.flagPossession.pop(username)
+        helper.resetFlag(flagColor)
+
+    socketio.emit("player_killed", data, include_self=False)
     
 
 @socketio.on("pass_flag")
