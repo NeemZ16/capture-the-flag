@@ -53,6 +53,8 @@ function onInit(d, scene) {
                 username, 
                 COLOR[player.color],
             );
+
+            scene.createPlayerScoreItem(username, allPlayers[username].score, allPlayers[username].color);
         }
     }
 
@@ -81,6 +83,8 @@ function onJoin(d, scene) {
     } else if (!(d.username in scene.otherPlayers)) {
         scene.createOtherPlayer(d.position.x, d.position.y, d.username, COLOR[d.color]);
     }
+    
+    scene.createPlayerScoreItem(d.username, 0, d.color);
 }
 
 function onMove(d, scene) {

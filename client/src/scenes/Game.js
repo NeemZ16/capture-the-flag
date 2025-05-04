@@ -1,6 +1,7 @@
 import { SOCKET_EVENTS, COLOR } from '../utils/gameConstants';
 import { BaseScene } from './BaseScene';
 import { connectWS } from '../utils/wsEvents';
+import { createPlayerScoreItem, removePlayerScoreItem, updatePlayerScoreItem } from '../utils/scoreUtils';
 
 
 export class Game extends BaseScene {
@@ -121,8 +122,7 @@ export class Game extends BaseScene {
         );
 
         const teamScoresBg = this.add.rectangle(
-            0,
-            0,
+            0, 0,
             teamScoresWidth,
             squareSize * 4 + padding * 5,
             0x555555,
@@ -159,15 +159,14 @@ export class Game extends BaseScene {
                 '0',
                 12
             ).setOrigin(0.5);
+            
             this.teamScores.add(scoreText);
-
             this.teamScoreValues[team] = scoreText;
-
             index++;
         }
 
         // player listing should be a container with transparent background
-        const playerListingsWidth = 150;
+        const playerListingsWidth = 175;
         const playerListingsHeight = 400;
         this.playerListings = this.add.container(
             0,
@@ -175,8 +174,7 @@ export class Game extends BaseScene {
         );
 
         const playerListingsBg = this.add.rectangle(
-            0,
-            0,
+            0, 0,
             playerListingsWidth,
             playerListingsHeight,
             0x555555,
@@ -391,15 +389,20 @@ export class Game extends BaseScene {
         this.uiElements = this.add.container(0, 0);
         this.uiCamera.ignore(this.worldElements);
         this.cameras.main.ignore(this.uiElements);
-        this.otherPlayers = {};
+        
+        this.otherPlayers = {}; 
         this.flags = {};
         this.teamScoreValues = {};
-
+        this.playerScoreItems = {}; // username -> [player listing item, player score text]
+        
         // initialize functions
         this.createBg();
         this.createNav();
         connectWS(this);
         this.createScoreboards();
+        this.createPlayerScoreItem = createPlayerScoreItem.bind(this);
+        this.removePlayerScoreItem = removePlayerScoreItem.bind(this);
+        this.updatePlayerScoreItem = updatePlayerScoreItem.bind(this);
 
         // initialize interaction
         this.cursors = this.input.keyboard.createCursorKeys();
