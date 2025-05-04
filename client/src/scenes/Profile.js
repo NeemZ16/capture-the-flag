@@ -11,8 +11,8 @@ export class Profile extends BaseScene {
             document.getElementById('profile-wrapper').style.display = 'none';
             this.scene.start('Game');
         };
-        
-        
+        document.getElementById('welcomeText').innerText = `hi ${this.game.username}!`;
+        document.getElementById('username').innerText = this.game.username;
     }
 
 }
