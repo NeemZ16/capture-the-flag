@@ -11,7 +11,7 @@ export class Profile extends BaseScene {
             document.getElementById('profile-wrapper').style.display = 'none';
             this.scene.start('Game');
         };
-
+        
         
     }
 

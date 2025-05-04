@@ -10,16 +10,20 @@
 </head>
 
 <body>
+    <!-- phaser scenes here -->
     <div id="app">
         <div id="game-container"></div>
     </div>
+    <!-- profile page here, initially display none -->
     <div id="profile-wrapper">
         <div class="nav">
-            <p class="welcomeText">hi {{username}}!</p>
+            <span class="welcomeText">hi {{username}}!</span>
             <img src="assets/logo.png" alt="Capture the Flag logo">
             <button id="logout">Logout</button>
         </div>
-        <button id="startGame">Join Game!</button>
+        <div class="profile-content">
+            <button id="startGame">Join Game!</button>
+        </div>
     </div>
     <script type="module" src="src/main.js"></script>
 </body>
