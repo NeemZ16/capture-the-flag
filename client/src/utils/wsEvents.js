@@ -37,6 +37,10 @@ export function connectWS(scene) {
     scene.ws.on(SOCKET_EVENTS.FLAG_SCORED, d => {
         onFlagScore(d, scene);
     })
+
+    scene.ws.on(SOCKET_EVENTS.PLAYER_KILLED, d => {
+        onPlayerKilled(d, scene);
+    })
 }
 
 function onInit(d, scene) {
@@ -52,6 +56,7 @@ function onInit(d, scene) {
                 player.position.y, 
                 username, 
                 COLOR[player.color],
+                player.color
             );
         }
     }
@@ -59,11 +64,12 @@ function onInit(d, scene) {
     // update flags carried by players
     updatePlayerFlags(d.flagPossession, scene);
 
-    // generate flags
+    // generate flags for the new player
     for (const color in teamData) {
         const colorCode = COLOR[color];
         const data = teamData[color];
 
+        //! if flag taken, it is set to None from ws.py
         // if flag not taken
         if (data.flagPosition) {
             scene.createFlag(data.flagPosition, color, colorCode);
@@ -73,10 +79,11 @@ function onInit(d, scene) {
 
 function onJoin(d, scene) {
     // expecting d.color to be string color name
+    //! scene.game.username is set from preloader
     if (d.username === scene.game.username) {
         scene.createPlayer(d.position.x, d.position.y, d.username, COLOR[d.color], d.color);
     } else if (!(d.username in scene.otherPlayers)) {
-        scene.createOtherPlayer(d.position.x, d.position.y, d.username, COLOR[d.color]);
+        scene.createOtherPlayer(d.position.x, d.position.y, d.username, COLOR[d.color], d.color);
     }
 }
 
@@ -84,8 +91,11 @@ function onMove(d, scene) {
     // get username and position from d
     const { username, position } = d;
 
+
+    //! const otherPlayer = this.add.container(x, y); from createOtherPlayer function
     // update that player's position
     const playerToMove = scene.otherPlayers[username];
+
     if (playerToMove) {
         playerToMove.setPosition(position.x, position.y);
     }
@@ -122,6 +132,29 @@ function onFlagScore(d, scene) {
     scene.dropoffFlag(d.color, d.username);
 }
 
+function onPlayerKilled(d, scene) {
+
+    // each object kill 
+    console.log(d);
+
+    /* 
+    For every player except d.uername = scene.game.username
+    - respawn the killed player
+    */
+    if (d.username === scene.game.username){
+        scene.player.setPosition(d.position.x, d.position.y);
+    } else if (d.username in scene.otherPlayers) {
+        scene.killPlayer(d.username);
+        scene.createOtherPlayer(d.position.x, d.position.y, d.username, COLOR[d.color], d.color);
+    }
+
+    // if (d.username === scene.game.username) {
+    //     scene.createPlayer(d.position.x, d.position.y, d.username, COLOR[d.color], d.color);
+    // } else if (!(d.username in scene.otherPlayers)) {
+    //     scene.createOtherPlayer(d.position.x, d.position.y, d.username, COLOR[d.color]);
+    // }
+}
+
 /**
  * If a player is carrying a flag and someone else refreshes, that player no longer has a flag on redraw.
  * This adds back the flags on refresh since backend is sending flagPossession dict on init
@@ -132,9 +165,11 @@ function updatePlayerFlags(flagData, scene) {
     for (const [username, flagColor] of Object.entries(flagData)) {
         // if self then continue -- you already have the flag
         if (username === scene.game.username) continue;
-
+        
+        //! const otherPlayer = this.add.container(x, y); from createOtherPlayer function
         // get player to update
         const playerToUpdate = scene.otherPlayers[username]
+        //! carriedFlag is a reference to a flag
         if (playerToUpdate.carriedFlag) continue;
 
         // update player object to have flag
@@ -147,6 +182,7 @@ function updatePlayerFlags(flagData, scene) {
 
         playerToUpdate.add(flagSprite);
 
+        //! This will be used for flag logics in Game.js
         // store reference to flag
         playerToUpdate.carriedFlag = flagSprite;
     }

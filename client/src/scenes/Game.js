@@ -109,6 +109,8 @@ export class Game extends BaseScene {
      * Creates own player object with username above it.
      */
     createPlayer(x, y, username, playerColor, teamColor) {
+
+        //! this.player = player.container 
         // create player container
         this.player = this.add.container(x, y);
         this.player.teamColor = teamColor;
@@ -143,10 +145,10 @@ export class Game extends BaseScene {
         this.worldElements.add(this.player);
     }
 
-    createOtherPlayer(x, y, username, playerColor) {
+    createOtherPlayer(x, y, username, playerColor, teamColor) {
         // create player container
         const otherPlayer = this.add.container(x, y);
-
+        otherPlayer.teamColor = teamColor;
         // create player object with circle
         const radius = 20;
         const sprite = this.add.graphics();
@@ -167,7 +169,8 @@ export class Game extends BaseScene {
     createFlag(position, color, colorCode) {
         // if flag already exists do not create
         if (this.flags[color]) return;
-
+        
+        //! flags = {color: flag_container}
         const flag = this.add.image(position.x, position.y, 'flag')
             .setScale(2).setTint(colorCode);
         this.flags[color] = flag;
@@ -287,6 +290,57 @@ export class Game extends BaseScene {
         this.createFlag(this.basePositions[color], color, COLOR[color])
     }
 
+    checkKillAttempt() {
+        const killThreshold = 40;
+    
+        for (const [username, otherPlayer] of Object.entries(this.otherPlayers)) {
+            
+            // if otherPlayer is the same team, don't proceed
+     
+            if (otherPlayer.teamColor === this.player.teamColor) continue;
+
+            // evaluate otherPlayer's distance
+            const dx = otherPlayer.x - this.player.x;
+            const dy = otherPlayer.y - this.player.y;
+            const distance = Math.hypot(dx, dy);
+        
+            if (distance < killThreshold) {
+                
+                this.ws.emit('player_killed', {
+                    username: username,
+                    color: otherPlayer.teamColor,
+                    position: this.basePositions[otherPlayer.teamColor]
+                });
+
+                break;  // only kill one player per key press
+
+
+                // let color = otherPlayer.teamColor;
+                // if (otherPlayer.hasFlag === True) {
+                //     otherPlayer.carriedFlag.destroy();
+                //     otherPlayer.carriedFlag = null;
+                //     otherPlayer.flagColor = null;
+                //     this.createFlag(this.basePositions[color], color, COLOR[color])
+                // }
+
+                // After kill, respawn the killed user
+            }
+        }
+    }
+
+    killPlayer(username) {
+        const playerToUpdate = this.otherPlayers[username];
+        if (!playerToUpdate) return;
+        
+        console.log(this.player.username, this.otherPlayers);
+
+        playerToUpdate.destroy();  // Remove from scene
+        delete this.otherPlayers[username];  // Remove from dictionary
+
+        console.log(this.player.username, this.otherPlayers);
+
+    }
+
     create() {
         // set up cameras containers and groups
         this.worldSize = 2000;
@@ -297,6 +351,7 @@ export class Game extends BaseScene {
         this.cameras.main.ignore(this.uiElements);
         this.otherPlayers = {};
         this.flags = {};
+        this.killKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.K);
 
         // initialize functions
         this.createBg();
@@ -362,6 +417,11 @@ export class Game extends BaseScene {
             } else {
                 this.checkFlagPickup();
             }
+        }
+
+        // when K pressed, check if any opponent player is in range
+        if (Phaser.Input.Keyboard.JustDown(this.killKey)) {
+            this.checkKillAttempt();
         }
     }
 

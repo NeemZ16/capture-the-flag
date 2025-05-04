@@ -11,8 +11,14 @@ helper = Helper()
 def initWs():
     playerName = request.args.get("username")
 
+    #! handle and create a player
+    #! return username, hasFlag, color, and position
     socketio.emit("player_joined", helper.addNewPlayer(playerName, request.sid))
 
+    #! display all other players
+    #! players = {username: {score, hasFlag, color, position}}
+    #! teamData = {color: {numPlayers, score, flagPosition, basePosition}}
+    #! flagPossession = {username: color}
     socketio.emit("init", {
         "players" : helper.players,
         "teamData": helper.teamData,
@@ -21,10 +27,12 @@ def initWs():
 
 @socketio.on("move")
 def broadcastMove(data):
+    #! data = {username: this.game.username, position: {x: this.player.x, y: this.player.y} }
     socketio.emit("move", data, include_self=False)
 
 @socketio.on("disconnect")
 def broadcastLeave():
+    #! return disconneted username and updated teamData
     socketio.emit("player_left", helper.removePlayer(request.sid))
 
 @socketio.on("flag_taken")
@@ -53,5 +61,15 @@ def broadcastFlagScored(data):
     helper.resetFlag(flagColor)
 
     # broadcast client data
+    #! data = {color, username}
     socketio.emit("flag_scored", data, include_self=False)
     
+@socketio.on("player_killed")
+def killPlayer(data):
+    # data = {username:username, color: color}
+    socketio.emit("player_killed", data, include_self=True)
+    
+
+@socketio.on("pass_flag")
+def passFlag():
+    pass

@@ -64,8 +64,8 @@ class Helper:
         Updates player and team data.
         Returns joinData for join ws event.
         '''
-        teamToJoin = self.leastPlayersTeam()
-        spawnPosition = self.getSpawnPosition(teamToJoin)
+        teamToJoin = self.leastPlayersTeam() # color
+        spawnPosition = self.getSpawnPosition(teamToJoin) # spawn position {"x", "y"}
 
         self.connections[sid] = username
 
@@ -76,7 +76,7 @@ class Helper:
             "position": spawnPosition
         }
 
-        self.teamData[teamToJoin]["numPlayers"] += 1
+        self.teamData[teamToJoin]["numPlayers"] += 1 # increment number of teams
         
         joinData = {
             "username": username,
