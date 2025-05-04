@@ -108,19 +108,57 @@ export class Game extends BaseScene {
     /**
      * Create score board on right for team scores.  
      * Create player listing on left with player scores.
-     */
+    */
     createScoreboards() {
         // team scores should have same background as nav 0x555, 0.5 alpha
         const teamScoresWidth = 75;
         this.teamScores = this.add.container(
             this.dimensions.width - teamScoresWidth,
-            this.dimensions.height / 4
+            125
         );
 
+        const teamScoresBg = this.add.rectangle(
+            0,
+            0,
+            teamScoresWidth,
+            200,
+            0x555555,
+            0.25
+        ).setOrigin(0);
+
+        this.teamScores.add(teamScoresBg);
+        this.uiElements.add(this.teamScores);
+
         // player listing should be a container with transparent background
+        const playerListingsWidth = 150;
+        const playerListingsHeight = 400;
         this.playerListings = this.add.container(
             0,
-            this.dimensions.height / 4
+            125
+        );
+
+        const playerListingsBg = this.add.rectangle(
+            0,
+            0,
+            playerListingsWidth,
+            playerListingsHeight,
+            0x555555,
+            0.25
+        ).setOrigin(0);
+
+        this.playerListings.add(playerListingsBg);
+        this.uiElements.add(this.playerListings);
+    }
+
+    repositionScoreboards() {
+        const teamScoresWidth = 75;
+        this.teamScores.setPosition(
+            this.dimensions.width - teamScoresWidth + 38,
+            125
+        );
+        this.playerListings.setPosition(
+            0,
+            125
         );
     }
 
@@ -278,7 +316,7 @@ export class Game extends BaseScene {
                 color: this.player.flagColor,
                 username: this.game.username
             });
-            
+
             this.dropoffFlag(this.player.flagColor, this.game.username);
         }
     }
@@ -296,7 +334,7 @@ export class Game extends BaseScene {
         } else {
             playerToUpdate = this.otherPlayers[username];
         }
-        
+
         // remove flag sprite
         playerToUpdate.carriedFlag.destroy();
         playerToUpdate.carriedFlag = null;
@@ -321,6 +359,7 @@ export class Game extends BaseScene {
         this.createBg();
         this.createNav();
         connectWS(this);
+        this.createScoreboards();
 
         // initialize interaction
         this.cursors = this.input.keyboard.createCursorKeys();
@@ -386,5 +425,6 @@ export class Game extends BaseScene {
 
     onResize() {
         this.repositionNavElements();
+        this.repositionScoreboards();
     }
 }
