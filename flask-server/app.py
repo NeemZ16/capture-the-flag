@@ -21,11 +21,11 @@ from util.avatar import Profile, AvatarUpload
 
 
 # Flask / Socket.IO setup
-flask_app = Flask(__name__)
-flask_app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev_secret")
-CORS(flask_app, origins=["http://localhost:8080"], supports_credentials=True)
-api = Api(flask_app)
-socketio.init_app(flask_app, async_mode=_async_mode)
+app = Flask(__name__)
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev_secret")
+CORS(app, origins=["http://localhost:8080"], supports_credentials=True)
+api = Api(app)
+socketio.init_app(app, async_mode=_async_mode)
 
 os.environ['TZ'] = 'America/New_York'
 time.tzset()
@@ -36,8 +36,8 @@ file_handler = RotatingFileHandler("../logs/server.log",
                                    maxBytes=1_000_000, backupCount=5)
 file_handler.setLevel(logging.INFO)
 file_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s: %(message)s"))
-flask_app.logger.setLevel(logging.INFO)
-flask_app.logger.addHandler(file_handler)
+app.logger.setLevel(logging.INFO)
+app.logger.addHandler(file_handler)
 
 # raw HTTP logger (first 2 KiB)
 RAW_MAX = 2048
