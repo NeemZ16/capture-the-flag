@@ -42,7 +42,8 @@ class Register(Resource):
                 "password": hashed_pw,
                 "stats": {
                     "kills": 0,
-                    "steals": 0
+                    "steals": 0,
+                    "flags_scored": 0,
                 }
             }
 
