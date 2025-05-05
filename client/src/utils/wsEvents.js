@@ -69,7 +69,6 @@ function onInit(d, scene) {
         const colorCode = COLOR[color];
         const data = teamData[color];
 
-        //! if flag taken, it is set to None from ws.py
         // if flag not taken
         if (data.flagPosition) {
             scene.createFlag(data.flagPosition, color, colorCode);
@@ -79,7 +78,6 @@ function onInit(d, scene) {
 
 function onJoin(d, scene) {
     // expecting d.color to be string color name
-    //! scene.game.username is set from preloader
     if (d.username === scene.game.username) {
         scene.createPlayer(d.position.x, d.position.y, d.username, COLOR[d.color], d.color);
     } else if (!(d.username in scene.otherPlayers)) {
@@ -91,7 +89,6 @@ function onMove(d, scene) {
     // get username and position from d
     const { username, position } = d;
 
-    //! const otherPlayer = this.add.container(x, y); from createOtherPlayer function
     // update that player's position
     const playerToMove = scene.otherPlayers[username];
 
@@ -133,11 +130,12 @@ function onFlagScore(d, scene) {
 
 function onPlayerKilled(d, scene) {
 
-    console.log(d.hasFlag+"--from wsEvents");
+    // if killed player has a flag, drop the flag
     if (d.hasFlag){
         scene.dropoffFlag(d.flagColor, d.username);
     }
-    
+
+    // respwan killed player
     scene.respawnPlayer(d.username, d.position);
 }
 
@@ -152,10 +150,8 @@ function updatePlayerFlags(flagData, scene) {
         // if self then continue -- you already have the flag
         if (username === scene.game.username) continue;
         
-        //! const otherPlayer = this.add.container(x, y); from createOtherPlayer function
         // get player to update
         const playerToUpdate = scene.otherPlayers[username]
-        //! carriedFlag is a reference to a flag
         if (playerToUpdate.carriedFlag) continue;
 
         // update player object to have flag
@@ -168,7 +164,6 @@ function updatePlayerFlags(flagData, scene) {
 
         playerToUpdate.add(flagSprite);
 
-        //! This will be used for flag logics in Game.js
         // store reference to flag
         playerToUpdate.carriedFlag = flagSprite;
     }

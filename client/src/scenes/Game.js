@@ -110,7 +110,6 @@ export class Game extends BaseScene {
      */
     createPlayer(x, y, username, playerColor, teamColor) {
 
-        //! this.player = player.container 
         // create player container
         this.player = this.add.container(x, y);
         this.player.teamColor = teamColor;
@@ -172,7 +171,6 @@ export class Game extends BaseScene {
         // if flag already exists do not create
         if (this.flags[color]) return;
         
-        //! flags = {color: flag_container}
         const flag = this.add.image(position.x, position.y, 'flag')
             .setScale(2).setTint(colorCode);
         this.flags[color] = flag;
@@ -215,7 +213,6 @@ export class Game extends BaseScene {
      */
     pickupFlag(color, username) {
         // remove flag
-        //! flags = {color: flag_container}
         const flag = this.flags[color];
         if (!flag) return;
         flag.destroy();
@@ -303,7 +300,7 @@ export class Game extends BaseScene {
             // if targetPlayer is the same team, skip
             if (targetPlayer.teamColor === this.player.teamColor) continue;
 
-            // evaluate otherPlayer's distance
+            // evaluate if any player is in target range
             const x = targetPlayer.x - this.player.x;
             const y = targetPlayer.y - this.player.y;
             const distance = Math.hypot(x, y);
@@ -313,10 +310,7 @@ export class Game extends BaseScene {
                 const targetColor = targetPlayer.teamColor;
                 const targetBasePosition = this.basePositions[targetColor];
 
-                // if target player has a flag, 
-                
-                console.log(targetPlayer.hasFlag + "--from Game.js");
-
+                // if target player has a flag, drop the flag
                 let flagColor = null;
                 let hasFlag = false;
                 if (targetPlayer.hasFlag){
@@ -325,7 +319,7 @@ export class Game extends BaseScene {
                     this.dropoffFlag(targetPlayer.flagColor, targetUsername);
                 }
 
-                // send target player data to recreate them
+                // send targeted player info to update data through websocket
                 this.ws.emit('player_killed', {
                     username: targetUsername,
                     hasFlag: hasFlag,
@@ -334,6 +328,7 @@ export class Game extends BaseScene {
                     position: targetBasePosition
                 });
                 
+                // respawn killed player
                 this.respawnPlayer(targetUsername, targetBasePosition);
             
                 break;  // only kill one player per key press
@@ -350,8 +345,6 @@ export class Game extends BaseScene {
         }
         
         playerToUpdate.setPosition(targetBasePosition.x, targetBasePosition.y)
-        // playerToUpdate.destroy();  // Remove from scene
-        // delete this.otherPlayers[targetUsername];  // Remove from dictionary
     }
 
     create() {

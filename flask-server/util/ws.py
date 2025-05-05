@@ -11,14 +11,8 @@ helper = Helper()
 def initWs():
     playerName = request.args.get("username")
 
-    #! handle and create a player
-    #! return username, hasFlag, color, and position
     socketio.emit("player_joined", helper.addNewPlayer(playerName, request.sid))
 
-    #! display all other players
-    #! players = {username: {score, hasFlag, color, position}}
-    #! teamData = {color: {numPlayers, score, flagPosition, basePosition}}
-    #! flagPossession = {username: color}
     socketio.emit("init", {
         "players" : helper.players,
         "teamData": helper.teamData,
@@ -27,17 +21,15 @@ def initWs():
 
 @socketio.on("move")
 def broadcastMove(data):
-    #! data = {username: this.game.username, position: {x: this.player.x, y: this.player.y} }
     socketio.emit("move", data, include_self=False)
 
 @socketio.on("disconnect")
 def broadcastLeave():
-    #! return disconneted username and updated teamData
     socketio.emit("player_left", helper.removePlayer(request.sid))
 
 @socketio.on("flag_taken")
 def broadcastFlagTaken(data):
-    #! data = {color, username}
+
     # update game state
     helper.teamData[data["color"]]["flagPosition"] = None
     helper.players[data["username"]]["hasFlag"] = True
@@ -48,7 +40,6 @@ def broadcastFlagTaken(data):
     
 @socketio.on("flag_scored")
 def broadcastFlagScored(data):
-    #! data = {color, username}
     # update player score and hasFlag
     username = data["username"]
     helper.players[username]["score"] += 1
@@ -64,19 +55,18 @@ def broadcastFlagScored(data):
 
     print(helper.teamData)
     # broadcast client data
-    #! data = {color, username}
     socketio.emit("flag_scored", data, include_self=False)
     
 @socketio.on("player_killed")
 def killPlayer(data):
-    # data = {username, hasFlag, flagColor, color, position}
-
+    
+    # if killed player has a flag, update following
     if data["hasFlag"]:
         username = data["username"]
         helper.players[username]["hasFlag"] = False
         flagColor = helper.flagPossession.pop(username)
         helper.resetFlag(flagColor)
-
+    
     socketio.emit("player_killed", data, include_self=False)
     
 
