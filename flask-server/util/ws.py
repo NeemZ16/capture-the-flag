@@ -78,6 +78,11 @@ def killPlayer(data):
         flagColor = helper.flagPossession.pop(username)
         helper.resetFlag(flagColor)
 
+    user_collection.update_one(
+        {"username": data["killer"]},
+        {"$inc": {"stats.kills": 1}}
+    )
+
     socketio.emit("player_killed", data, include_self=False)
 
 @socketio.on("steal_flag")
@@ -92,7 +97,13 @@ def stealFlag(data):
     helper.players[data["targetUsername"]]["hasFlag"] = False
     helper.flagPossession.pop(data["targetUsername"])
 
+    user_collection.update_one(
+        {"username": data["stealer"]},
+        {"$inc": {"stats.steals": 1}}
+    )
+
     socketio.emit("steal_flag", data, include_self=False)
+
 
 @socketio.on("pass_flag")
 def passFlag(data):
