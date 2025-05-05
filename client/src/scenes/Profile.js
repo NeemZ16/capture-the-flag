@@ -29,7 +29,7 @@ export class Profile extends BaseScene {
     updatePlayerStatsUI(stats) {
         document.querySelector("#kills .value").innerText = stats.kills
         document.querySelector("#steals .value").innerText = stats.steals
-        document.querySelector("#scores .value").innerText = stats.flags_scored
+        document.querySelector("#scored .value").innerText = stats.flags_scored
     }
 
     fetchProfileImg() {
