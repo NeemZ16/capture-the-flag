@@ -139,6 +139,17 @@ class PlayerStats(Resource):
             return {"error": "Player not found"}, 404
         return userStats['stats'], 200
 
+class Leaderboard(Resource):
+    def get(self):
+        # Find top 10 players sorted by flags scored (descending order)
+        top_players = user_collection.find({}, {"username": 1, "stats.flags_scored": 1}).sort("stats.flags_scored",-1).limit(10)
+
+        # Construct a proper array of objects
+        players = [{"username": player["username"], "flags_scored": player["stats"]["flags_scored"]} for player in top_players]
+
+        return {"players": players}, 200
+
+
 def validate_pw(password):
     """
     constraints:
