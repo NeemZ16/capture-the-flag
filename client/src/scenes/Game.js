@@ -496,8 +496,6 @@ export class Game extends BaseScene {
 
                 this.passFlag(this.game.username, targetPlayer.username, color);
                 
-                // console.log(this.player.username);
-
                 this.ws.emit('pass_flag', {
                     sender: this.game.username,
                     receiver: targetUsername,
@@ -519,7 +517,7 @@ export class Game extends BaseScene {
         }else{
             senderToUpdate = this.otherPlayers[sender];
         }
-
+        
         if (receiver === this.game.username) {
             receiverToUpdate = this.player;
         }else{
@@ -542,9 +540,6 @@ export class Game extends BaseScene {
         senderToUpdate.carriedFlag = null;
         senderToUpdate.flagColor = null;
         senderToUpdate.hasFlag = false;
-
-        console.log(receiverToUpdate);
-        console.log(senderToUpdate);
     }
 
     create() {

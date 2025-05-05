@@ -73,9 +73,7 @@ def killPlayer(data):
 
 @socketio.on("pass_flag")
 def passFlag(data):
-    print(data)
     # data = {sender, receiver, color}
-
     # update receiver with flag
     helper.players[data["receiver"]]["hasFlag"] = True
     helper.flagPossession[data["receiver"]] = data["color"]
