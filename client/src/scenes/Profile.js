@@ -23,6 +23,16 @@ export class Profile extends BaseScene {
             .catch((err) => console.error(err));
     }
 
+    getPlayerStats() {
+        fetch(import.meta.env.VITE_API_URL + "stats/" + this.game.username, {
+            credentials: 'include'
+        })
+            .then(res => res.json())
+            .then(data => {
+                console.log(data);
+            })
+    }
+
     uploadProfileImg(file) {
         const formData = new FormData();
         formData.append('avatar', file);
@@ -100,6 +110,7 @@ export class Profile extends BaseScene {
         }
 
         this.getProfileImg();
+        this.getPlayerStats();
 
         document.getElementById('uploadImg').onclick = () => {
             // programmatically click hidden input button bc styling is a pain
