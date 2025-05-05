@@ -422,13 +422,14 @@ export class Game extends BaseScene {
         this.createFlag(this.basePositions[color], color, COLOR[color])
     }
 
+
     checkKillAttempt() {
         const killThreshold = 40;
     
         for (const [targetUsername, targetPlayer] of Object.entries(this.otherPlayers)) {
             
-            // if targetPlayer is the same team, skip
-            if (targetPlayer.teamColor === this.player.teamColor) continue;
+            // if targetPlayer is the same team or targetPlayer dones't have a flag, skip
+            if (targetPlayer.teamColor === this.player.teamColor || !targetPlayer.hasFlag) continue;
 
             // evaluate if any player is in target range
             const x = targetPlayer.x - this.player.x;
@@ -437,28 +438,27 @@ export class Game extends BaseScene {
         
             if (distance < killThreshold) {
 
+                // prepare data
+                let flagColor = null;
+                let hasFlag = false;
+                flagColor = targetPlayer.flagColor;
+                hasFlag = targetPlayer.hasFlag;
                 const targetColor = targetPlayer.teamColor;
                 const targetBasePosition = this.basePositions[targetColor];
 
-                // if target player has a flag, drop the flag
-                let flagColor = null;
-                let hasFlag = false;
-                if (targetPlayer.hasFlag){
-                    flagColor = targetPlayer.flagColor;
-                    hasFlag = targetPlayer.hasFlag;
-                    this.dropoffFlagByKilled(targetPlayer.flagColor, targetUsername);
-                }
-
-                // send targeted player info to update data through websocket
+                // drop the targetPlayer's flag
+                this.dropoffFlagByKilled(targetPlayer.flagColor, targetUsername);
+     
+                // broadcast flag drop and respawn the targetPlayer
                 this.ws.emit('player_killed', {
-                    username: targetUsername,
+                    killer: this.game.username,
+                    targetUsername: targetUsername,
                     hasFlag: hasFlag,
                     flagColor: flagColor,
-                    color: targetColor,
-                    position: targetBasePosition
+                    targetBasePosition: targetBasePosition
                 });
                 
-                // respawn killed player
+                // respawn the targetPlayer
                 this.respawnPlayer(targetUsername, targetBasePosition);
             
                 break;  // only kill one player per key press
@@ -473,11 +473,81 @@ export class Game extends BaseScene {
         } else {
             playerToUpdate = this.otherPlayers[targetUsername];
         }
-        
         playerToUpdate.setPosition(targetBasePosition.x, targetBasePosition.y)
     }
 
-    checkPassFlag() {
+    checkStealAttempt() {
+        const stealThreshold = 40;
+    
+        for (const [targetUsername, targetPlayer] of Object.entries(this.otherPlayers)) {
+            
+            // if targetPlayer is the same team or targetPlayer dones't have a flag, skip
+            if (targetPlayer.teamColor === this.player.teamColor || !targetPlayer.hasFlag) continue;
+
+            // if the targetPlayer's flag is the same color as the player team color, skip
+            if (targetPlayer.flagColor === this.player.teamColor) continue;
+
+            // evaluate if any player is in target range
+            const x = targetPlayer.x - this.player.x;
+            const y = targetPlayer.y - this.player.y;
+            const distance = Math.hypot(x, y);
+        
+            if (distance < stealThreshold) {
+
+                const flagColor = targetPlayer.flagColor;
+
+                this.stealFlag(this.game.username, targetPlayer.username, flagColor);
+                
+                this.ws.emit('steal_flag', {
+                    stealer: this.game.username,
+                    targetUsername: targetUsername,
+                    flagColor: flagColor,
+                    freeze_time: 2.5
+                });
+            }
+        }
+    }
+
+    stealFlag(stealer, targetUsername, flagColor){
+
+        let stealerToUpdate;
+        let targetToUpdate;
+        if (stealer === this.game.username) {
+            stealerToUpdate = this.player;
+        }else{
+            stealerToUpdate = this.otherPlayers[stealer];
+        }
+        
+        if (targetUsername === this.game.username) {
+            targetToUpdate = this.player;
+        }else{
+            targetToUpdate = this.otherPlayers[targetUsername];
+        }
+        
+        const flagSprite = this.add.image(0, 0, 'flag')
+            .setScale(1.2)
+            .setTint(COLOR[flagColor])
+            .setAngle(45)
+            .setOrigin(0.5)
+            .setPosition(40, 15);
+
+        stealerToUpdate.add(flagSprite);
+        stealerToUpdate.carriedFlag = flagSprite;
+        stealerToUpdate.flagColor = flagColor;
+        stealerToUpdate.hasFlag = true;
+
+        targetToUpdate.carriedFlag.destroy();
+        targetToUpdate.carriedFlag = null;
+        targetToUpdate.flagColor = null;
+        targetToUpdate.hasFlag = false;
+    }
+
+    // wait(seconds) {
+    //     return new Promise(resolve => setTimeout(resolve, seconds * 1000));
+    // }
+
+ 
+    checkPassAttempt() {
         const passThreshold = 40;
 
         for (const [targetUsername, targetPlayer] of Object.entries(this.otherPlayers)) {
@@ -492,14 +562,14 @@ export class Game extends BaseScene {
         
             if (distance < passThreshold) {
 
-                const color = this.player.flagColor;
+                const flagColor = this.player.flagColor;
 
-                this.passFlag(this.game.username, targetPlayer.username, color);
+                this.passFlag(this.game.username, targetPlayer.username, flagColor);
                 
                 this.ws.emit('pass_flag', {
                     sender: this.game.username,
-                    receiver: targetUsername,
-                    color: color
+                    targetUsername: targetUsername,
+                    flagColor: flagColor
                 });
             
                 break;  // only pass to one player per key press
@@ -508,33 +578,33 @@ export class Game extends BaseScene {
         }
     }
 
-    passFlag(sender, receiver, color) {
+    passFlag(sender, targetUsername, flagColor) {
 
         let senderToUpdate;
-        let receiverToUpdate;
+        let targetToUpdate;
         if (sender === this.game.username) {
             senderToUpdate = this.player;
         }else{
             senderToUpdate = this.otherPlayers[sender];
         }
         
-        if (receiver === this.game.username) {
-            receiverToUpdate = this.player;
+        if (targetUsername === this.game.username) {
+            targetToUpdate = this.player;
         }else{
-            receiverToUpdate = this.otherPlayers[receiver];
+            targetToUpdate = this.otherPlayers[targetUsername];
         }
         
         const flagSprite = this.add.image(0, 0, 'flag')
             .setScale(1.2)
-            .setTint(COLOR[color])
+            .setTint(COLOR[flagColor])
             .setAngle(45)
             .setOrigin(0.5)
             .setPosition(40, 15);
 
-        receiverToUpdate.add(flagSprite);
-        receiverToUpdate.carriedFlag = flagSprite;
-        receiverToUpdate.flagColor = color;
-        receiverToUpdate.hasFlag = true;
+        targetToUpdate.add(flagSprite);
+        targetToUpdate.carriedFlag = flagSprite;
+        targetToUpdate.flagColor = flagColor;
+        targetToUpdate.hasFlag = true;
 
         senderToUpdate.carriedFlag.destroy();
         senderToUpdate.carriedFlag = null;
@@ -552,8 +622,9 @@ export class Game extends BaseScene {
         this.cameras.main.ignore(this.uiElements);
         this.otherPlayers = {};
         this.flags = {};
-        this.killKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
-        this.passFlagKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
+        this.killKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F);
+        this.passFlagKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
+        this.stealFlagKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
         this.teamScoreValues = {};
 
         // initialize functions
@@ -626,13 +697,21 @@ export class Game extends BaseScene {
 
         // when K pressed, check if any opponent player is in range
         if (Phaser.Input.Keyboard.JustDown(this.killKey)) {
+            // if the player has a flag, can't kill
+            if (this.player.hasFlag) return;
             this.checkKillAttempt();
         }
 
+        if (Phaser.Input.Keyboard.JustDown(this.stealFlagKey)) {
+            // if the player has a flag, can't steal
+            if (this.player.hasFlag) return;
+            this.checkStealAttempt();
+        }
+
         if (Phaser.Input.Keyboard.JustDown(this.passFlagKey)) {
-            // check if the player has a flag
+            // if the playe doesn't have a flag, can't pass
             if (!this.player.hasFlag) return;
-            this.checkPassFlag();
+            this.checkPassAttempt();
         }
 
     }
