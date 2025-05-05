@@ -62,12 +62,6 @@ def broadcastFlagScored(data):
         {"$inc": {"stats.flags_scored": 1}}
     )
 
-    #update player stats in db
-    user_collection.update_one(
-        {"username": username},
-        {"$inc": {"stats.flags_scored": 1}}
-    )
-
     print(helper.teamData)
     
     # broadcast client data

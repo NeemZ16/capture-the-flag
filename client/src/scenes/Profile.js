@@ -40,8 +40,7 @@ export class Profile extends BaseScene {
 
     }
 
-    create() {
-        const playerStats = this.fetchPlayerStats(this.game.username)
+    async create() {
         document.getElementById('profile-wrapper').style.display = 'block';
         document.getElementById('startGame').onclick = () => {
             document.getElementById('profile-wrapper').style.display = 'none';
@@ -50,14 +49,22 @@ export class Profile extends BaseScene {
         document.getElementById('welcomeText').innerText = `hi ${this.game.username}!`;
         document.getElementById('username').innerText = this.game.username;
 
+        // Fetch player stats asynchronously
+        const playerStats = await this.fetchPlayerStats(this.game.username);
+
+        if (!playerStats) {
+            console.error("Failed to fetch player stats.");
+            return; // Stop execution if stats aren't available
+        }
+
         // Select achievements container
         const achievementsContainer = document.querySelector('.achievements');
 
         // Example achievements with progress tracking
         const achievements = [
-            { title: "First Blood", description: "Get your first kill.", progress: playerStats.kills, max: 1 },
-            { title: "Flag Master", description: "Capture 5 flags.", progress: playerStats.flags_scored, max: 5 },
-            { title: "Master Ninja", description: "Steal 10 flags from enemies.", progress: playerStats.steals, max: 10 }
+            { title: "First Blood", description: "Get your first kill.", progress: playerStats.kills || 0, max: 1 },
+            { title: "Flag Master", description: "Capture 5 flags.", progress: playerStats.flags_scored || 0, max: 5 },
+            { title: "Master Ninja", description: "Steal 10 flags from enemies.", progress: playerStats.steals || 0, max: 10 }
         ];
 
         // Clear previous content
@@ -71,7 +78,7 @@ export class Profile extends BaseScene {
                 <strong>${achievement.title}</strong><br>
                 <p>${achievement.description}</p>
                 <div class="progress-container">
-                    <div class="progress-bar" style="width: ${ (achievement.progress / achievement.max) * 100 }%;"></div>
+                    <div class="progress-bar" style="width: ${(achievement.progress / achievement.max) * 100}%"></div>
                 </div>
                 <p>${achievement.progress} / ${achievement.max}</p>
             `;
