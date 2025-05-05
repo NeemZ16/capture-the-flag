@@ -179,6 +179,20 @@ export class Profile extends BaseScene {
         }
 
         this.getProfileImg();
+        // Display Leaderboard
+        leaderboardContainer.innerHTML = "<h2>Leaderboard</h2>";
+
+        leaderboard.players.forEach((player, index) => {
+            const leaderboardItem = document.createElement('div');
+            leaderboardItem.classList.add('leaderboard-entry');
+            leaderboardItem.innerHTML = `
+            <div class="player-card">
+                <p><strong>${index + 1}. ${player.username}</strong></p>
+                <p>Flags Scored: ${player.flags_scored}</p>
+            </div>
+        `;
+            leaderboardContainer.appendChild(leaderboardItem);
+        });
 
         document.getElementById('uploadImg').onclick = () => {
             // programmatically click hidden input button bc styling is a pain
@@ -189,23 +203,8 @@ export class Profile extends BaseScene {
             const file = event.target.files[0];
             if (!file) return;
 
-        // Display Leaderboard
-        leaderboardContainer.innerHTML = "<h2>Leaderboard</h2>";
-
-        leaderboard.players.forEach((player, index) => {
-            const leaderboardItem = document.createElement('div');
-            leaderboardItem.classList.add('leaderboard-entry');
-            leaderboardItem.innerHTML = `
-                <div class="player-card">
-                    <p><strong>${index + 1}. ${player.username}</strong></p>
-                    <p>Flags Scored: ${player.flags_scored}</p>
-                </div>
-            `;
-            leaderboardContainer.appendChild(leaderboardItem);
-        });
-    }
-
             this.uploadProfileImg(file);
-        };
-    }
+        }
+
+    };
 }

@@ -102,7 +102,7 @@ h1 {
 .profile-content {
     width: 90%;
     max-width: 900px;
-    margin: 20px auto;
+    margin: 10px auto;
     display: flex;
     background-color: #222;
     border: 2px solid #444;

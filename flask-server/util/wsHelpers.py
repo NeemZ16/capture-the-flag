@@ -75,7 +75,7 @@ class Helper:
             "hasFlag": False,
             "color": teamToJoin,
             "position": spawnPosition,
-            "pfp": self.findAvatar(username)
+            "pfp": self.findAvatar(username),
             "kill_score": 0,
             "steal_score": 0,
         }
