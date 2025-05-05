@@ -115,6 +115,7 @@ h1 {
     width: 150px;
     height: 150px;
     border-radius: 100px;
+    object-fit: cover; 
     border: 2px solid #028af8;
 }
 

@@ -17,7 +17,6 @@ export class Profile extends BaseScene {
             }
 
             const stats = await response.json();
-            console.log(stats)
             this.updatePlayerStatsUI(stats);
 
             return stats;
