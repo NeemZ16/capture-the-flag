@@ -76,6 +76,8 @@ class Helper:
             "color": teamToJoin,
             "position": spawnPosition,
             "pfp": self.findAvatar(username)
+            "kill_score": 0,
+            "steal_score": 0,
         }
 
         self.teamData[teamToJoin]["numPlayers"] += 1 # increment number of teams
