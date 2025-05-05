@@ -1,13 +1,12 @@
 from util.database import user_collection, auth_token_collection
 from flask_restful import Resource
-from flask import request, jsonify, make_response
+from flask import request, make_response
 import re
 import bcrypt
 import uuid
 import secrets
 import hashlib
 import html
-from datetime import datetime, timedelta
 
 salt = bcrypt.gensalt()
 
