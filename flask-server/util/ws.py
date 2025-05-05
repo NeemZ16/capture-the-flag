@@ -1,6 +1,7 @@
 from shared import socketio
 from flask import request
 from util.wsHelpers import Helper
+from util.database import user_collection
 
 ### WS EVENTS DEFINED IN THIS FILE
 
@@ -29,6 +30,7 @@ def broadcastLeave():
 
 @socketio.on("flag_taken")
 def broadcastFlagTaken(data):
+
     # update game state
     helper.teamData[data["color"]]["flagPosition"] = None
     helper.players[data["username"]]["hasFlag"] = True
@@ -54,6 +56,46 @@ def broadcastFlagScored(data):
     flagColor = helper.flagPossession.pop(username)
     helper.resetFlag(flagColor)
 
+    #update player stats in db
+    user_collection.update_one(
+        {"username": username},
+        {"$inc": {"stats.flags_scored": 1}}
+    )
+
+    #update player stats in db
+    user_collection.update_one(
+        {"username": username},
+        {"$inc": {"stats.flags_scored": 1}}
+    )
+
+    print(helper.teamData)
+    
     # broadcast client data
     socketio.emit("flag_scored", data, include_self=False)
+    
+@socketio.on("player_killed")
+def killPlayer(data):
+    
+    # if killed player has a flag, update following
+    if data["hasFlag"]:
+        username = data["username"]
+        helper.players[username]["hasFlag"] = False
+        flagColor = helper.flagPossession.pop(username)
+        helper.resetFlag(flagColor)
+
+    socketio.emit("player_killed", data, include_self=False)
+    
+
+@socketio.on("pass_flag")
+def passFlag(data):
+    # data = {sender, receiver, color}
+    # update receiver with flag
+    helper.players[data["receiver"]]["hasFlag"] = True
+    helper.flagPossession[data["receiver"]] = data["color"]
+
+    # update sender without flag
+    helper.players[data["sender"]]["hasFlag"] = False
+    helper.flagPossession.pop(data["sender"])
+
+    socketio.emit("pass_flag", data, include_self=False)
     

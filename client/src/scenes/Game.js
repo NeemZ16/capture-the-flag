@@ -216,9 +216,11 @@ export class Game extends BaseScene {
      * Creates own player object with username above it.
      */
     createPlayer(x, y, username, playerColor, teamColor) {
+
         // create player container
         this.player = this.add.container(x, y);
         this.player.teamColor = teamColor;
+        this.player.hasFlag = false;
 
         // create player object with circle
         const radius = 20;
@@ -250,10 +252,11 @@ export class Game extends BaseScene {
         this.worldElements.add(this.player);
     }
 
-    createOtherPlayer(x, y, username, playerColor) {
+    createOtherPlayer(x, y, username, playerColor, teamColor) {
         // create player container
         const otherPlayer = this.add.container(x, y);
-
+        otherPlayer.teamColor = teamColor;
+        otherPlayer.hasFlag = false;
         // create player object with circle
         const radius = 20;
         const sprite = this.add.graphics();
@@ -274,7 +277,7 @@ export class Game extends BaseScene {
     createFlag(position, color, colorCode) {
         // if flag already exists do not create
         if (this.flags[color]) return;
-
+        
         const flag = this.add.image(position.x, position.y, 'flag')
             .setScale(2).setTint(colorCode);
         this.flags[color] = flag;
@@ -343,6 +346,7 @@ export class Game extends BaseScene {
         // store reference to flag
         playerToUpdate.carriedFlag = flagSprite;
         playerToUpdate.flagColor = color;
+        playerToUpdate.hasFlag = true;
     }
 
     /**
@@ -392,9 +396,150 @@ export class Game extends BaseScene {
         playerToUpdate.carriedFlag.destroy();
         playerToUpdate.carriedFlag = null;
         playerToUpdate.flagColor = null;
+        playerToUpdate.hasFlag = false;
 
         // create flag at base
         this.createFlag(this.basePositions[color], color, COLOR[color])
+    }
+
+
+    dropoffFlagByKilled(color, username) {
+        // get player with username
+        let playerToUpdate;
+        if (username === this.game.username) {
+            playerToUpdate = this.player;
+        } else {
+            playerToUpdate = this.otherPlayers[username];
+        }
+
+        // remove flag sprite
+        playerToUpdate.carriedFlag.destroy();
+        playerToUpdate.carriedFlag = null;
+        playerToUpdate.flagColor = null;
+        playerToUpdate.hasFlag = false;
+
+        // create flag at base
+        this.createFlag(this.basePositions[color], color, COLOR[color])
+    }
+
+    checkKillAttempt() {
+        const killThreshold = 40;
+    
+        for (const [targetUsername, targetPlayer] of Object.entries(this.otherPlayers)) {
+            
+            // if targetPlayer is the same team, skip
+            if (targetPlayer.teamColor === this.player.teamColor) continue;
+
+            // evaluate if any player is in target range
+            const x = targetPlayer.x - this.player.x;
+            const y = targetPlayer.y - this.player.y;
+            const distance = Math.hypot(x, y);
+        
+            if (distance < killThreshold) {
+
+                const targetColor = targetPlayer.teamColor;
+                const targetBasePosition = this.basePositions[targetColor];
+
+                // if target player has a flag, drop the flag
+                let flagColor = null;
+                let hasFlag = false;
+                if (targetPlayer.hasFlag){
+                    flagColor = targetPlayer.flagColor;
+                    hasFlag = targetPlayer.hasFlag;
+                    this.dropoffFlagByKilled(targetPlayer.flagColor, targetUsername);
+                }
+
+                // send targeted player info to update data through websocket
+                this.ws.emit('player_killed', {
+                    username: targetUsername,
+                    hasFlag: hasFlag,
+                    flagColor: flagColor,
+                    color: targetColor,
+                    position: targetBasePosition
+                });
+                
+                // respawn killed player
+                this.respawnPlayer(targetUsername, targetBasePosition);
+            
+                break;  // only kill one player per key press
+            }
+        }
+    }
+
+    respawnPlayer(targetUsername, targetBasePosition) {
+        let playerToUpdate;
+        if (targetUsername === this.game.username) {
+            playerToUpdate = this.player;
+        } else {
+            playerToUpdate = this.otherPlayers[targetUsername];
+        }
+        
+        playerToUpdate.setPosition(targetBasePosition.x, targetBasePosition.y)
+    }
+
+    checkPassFlag() {
+        const passThreshold = 40;
+
+        for (const [targetUsername, targetPlayer] of Object.entries(this.otherPlayers)) {
+                        
+            // if targetPlayer is not the same team, skip
+            if (targetPlayer.teamColor !== this.player.teamColor) continue;
+
+            // evaluate if any player is in target range
+            const x = targetPlayer.x - this.player.x;
+            const y = targetPlayer.y - this.player.y;
+            const distance = Math.hypot(x, y);
+        
+            if (distance < passThreshold) {
+
+                const color = this.player.flagColor;
+
+                this.passFlag(this.game.username, targetPlayer.username, color);
+                
+                this.ws.emit('pass_flag', {
+                    sender: this.game.username,
+                    receiver: targetUsername,
+                    color: color
+                });
+            
+                break;  // only pass to one player per key press
+            }
+            
+        }
+    }
+
+    passFlag(sender, receiver, color) {
+
+        let senderToUpdate;
+        let receiverToUpdate;
+        if (sender === this.game.username) {
+            senderToUpdate = this.player;
+        }else{
+            senderToUpdate = this.otherPlayers[sender];
+        }
+        
+        if (receiver === this.game.username) {
+            receiverToUpdate = this.player;
+        }else{
+            receiverToUpdate = this.otherPlayers[receiver];
+        }
+        
+        const flagSprite = this.add.image(0, 0, 'flag')
+            .setScale(1.2)
+            .setTint(COLOR[color])
+            .setAngle(45)
+            .setOrigin(0.5)
+            .setPosition(40, 15);
+
+        receiverToUpdate.add(flagSprite);
+        receiverToUpdate.carriedFlag = flagSprite;
+        receiverToUpdate.flagColor = color;
+        receiverToUpdate.hasFlag = true;
+
+        senderToUpdate.carriedFlag.destroy();
+        senderToUpdate.carriedFlag = null;
+        senderToUpdate.flagColor = null;
+        senderToUpdate.hasFlag = false;
     }
 
     create() {
@@ -407,6 +552,8 @@ export class Game extends BaseScene {
         this.cameras.main.ignore(this.uiElements);
         this.otherPlayers = {};
         this.flags = {};
+        this.killKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+        this.passFlagKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
         this.teamScoreValues = {};
 
         // initialize functions
@@ -476,6 +623,18 @@ export class Game extends BaseScene {
                 this.checkFlagPickup();
             }
         }
+
+        // when K pressed, check if any opponent player is in range
+        if (Phaser.Input.Keyboard.JustDown(this.killKey)) {
+            this.checkKillAttempt();
+        }
+
+        if (Phaser.Input.Keyboard.JustDown(this.passFlagKey)) {
+            // check if the player has a flag
+            if (!this.player.hasFlag) return;
+            this.checkPassFlag();
+        }
+
     }
 
     onResize() {
