@@ -41,6 +41,10 @@ export function connectWS(scene) {
     scene.ws.on(SOCKET_EVENTS.PLAYER_KILLED, d => {
         onPlayerKilled(d, scene);
     })
+
+    scene.ws.on(SOCKET_EVENTS.PASS_FLAG, d => {
+        onPassFlag(d, scene);
+    })
 }
 
 function onInit(d, scene) {
@@ -151,6 +155,10 @@ function onPlayerKilled(d, scene) {
 
     // respwan killed player
     scene.respawnPlayer(d.username, d.position);
+}
+
+function onPassFlag(d, scene) {
+    scene.passFlag(d.sender, d.receiver, d.color);
 }
 
 /**
