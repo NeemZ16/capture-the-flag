@@ -55,7 +55,6 @@ def broadcastFlagScored(data):
     flagColor = helper.flagPossession.pop(username)
     helper.resetFlag(flagColor)
 
-    print(helper.teamData)
     # broadcast client data
     socketio.emit("flag_scored", data, include_self=False)
     
@@ -68,7 +67,7 @@ def killPlayer(data):
         helper.players[username]["hasFlag"] = False
         flagColor = helper.flagPossession.pop(username)
         helper.resetFlag(flagColor)
-    
+
     socketio.emit("player_killed", data, include_self=False)
     
 
