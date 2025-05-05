@@ -1,6 +1,7 @@
 from shared import socketio
 from flask import request
 from util.wsHelpers import Helper
+from util.database import user_collection
 
 ### WS EVENTS DEFINED IN THIS FILE
 
@@ -55,7 +56,20 @@ def broadcastFlagScored(data):
     flagColor = helper.flagPossession.pop(username)
     helper.resetFlag(flagColor)
 
+    #update player stats in db
+    user_collection.update_one(
+        {"username": username},
+        {"$inc": {"stats.flags_scored": 1}}
+    )
+
+    #update player stats in db
+    user_collection.update_one(
+        {"username": username},
+        {"$inc": {"stats.flags_scored": 1}}
+    )
+
     print(helper.teamData)
+    
     # broadcast client data
     socketio.emit("flag_scored", data, include_self=False)
     
