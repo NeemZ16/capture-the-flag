@@ -35,7 +35,17 @@ class Register(Resource):
         id = str(uuid.uuid4())
 
         try:
-            user_collection.insert_one({"id": id, "username": username, "password": hashed_pw})
+            new_user = {
+                "id": id,
+                "username": username,
+                "password": hashed_pw,
+                "stats": {
+                    "kills": 0,
+                    "steals": 0
+                }
+            }
+
+            user_collection.insert_one(new_user)
             return init_response("Registration Successful!", 200)
 
         except Exception as e:
@@ -116,6 +126,17 @@ class Me(Resource):
 
         user = user_collection.find_one({"id": entry["id"]})
         return {"username": user["username"] if user else ""}, 200
+
+class PlayerStats(Resource):
+    
+    def get(self, username):
+        userStats = user_collection.find_one(
+            {"username": username},
+            {"_id": 0, "stats": 1}
+        )
+        if not userStats:
+            return {"error": "Player not found"}, 404
+        return userStats['stats'], 200
 
 def validate_pw(password):
     """
