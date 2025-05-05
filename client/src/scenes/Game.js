@@ -212,72 +212,132 @@ export class Game extends BaseScene {
         );
     }
 
+    loadAvatarTexture(username, imageUrl, onComplete) {
+        const avatarKey = `avatar_${username}`;
+
+        if (!imageUrl) {
+            onComplete?.(null); // no avatar to load
+            return;
+        }
+
+        if (!this.textures.exists(avatarKey)) {
+            this.load.image(avatarKey, imageUrl);
+            this.load.once('complete', () => onComplete?.(avatarKey));
+            this.load.start();
+        } else {
+            onComplete?.(avatarKey); // already loaded
+        }
+    }
+
     /**
      * Creates own player object with username above it.
      */
-    createPlayer(x, y, username, playerColor, teamColor) {
+    createPlayer(x, y, username, playerColor, teamColor, imageUrl) {
+        this.loadAvatarTexture(username, imageUrl, (avatarKey) => {
+            const radius = 20;
 
-        // create player container
-        this.player = this.add.container(x, y);
-        this.player.teamColor = teamColor;
-        this.player.hasFlag = false;
+            // create player container
+            this.player = this.add.container(x, y);
+            this.player.teamColor = teamColor;
+            this.player.hasFlag = false;
 
-        // create player object with circle
-        const radius = 20;
-        this.playerSprite = this.add.graphics();
-        this.playerSprite.lineStyle(4, 0xffffff, 1);  // 4px border, white color
-        this.playerSprite.strokeCircle(radius, radius, radius);  // Draw the border
-        this.playerSprite.fillStyle(playerColor, 1); // Red color, full opacity
-        this.playerSprite.fillCircle(radius, radius, radius);
+            // avatar or fallback circle
+            if (avatarKey) {
+                console.log("AVATAR KEY")
+                const backgroundCircle = this.add.graphics();
+                backgroundCircle.fillStyle(playerColor, 1);  // Set the background color to `playerColor`
+                backgroundCircle.fillCircle(radius, radius, radius);  // Draw the background circle
+                backgroundCircle.lineStyle(2, 0xffffff, 1);
+                backgroundCircle.strokeCircle(radius, radius, radius);
+                this.player.add(backgroundCircle);  // Add to the player container
 
-        // add player to player container
-        this.player.add(this.playerSprite);
+                const avatar = this.add.image(radius, radius, avatarKey)
+                    .setDisplaySize((radius - 4) * 2, (radius - 4) * 2);
 
-        // create player name centered over sprite
-        this.playerName = this.add.bitmapText(radius, -radius, 'pixel', username, 12).setOrigin(0.5);
-        this.player.add(this.playerName);
+                // apply circular mask
+                const maskShape = this.make.graphics({ x: 0, y: 0, add: false });
+                maskShape.fillStyle(0xffffff);
+                maskShape.fillCircle(radius, radius, radius - 2);
+                const mask = maskShape.createGeometryMask();
+                mask.invertAlpha = true;
+                avatar.setMask(mask);
 
-        // set player position and physics
-        this.player.setPosition(x, y);
-        this.physics.world.enable(this.player);
-        this.player.body.setCircle(radius);
-        this.player.body.setDrag(100, 100);
+                this.player.add(avatar);
+            } else {
+                // fallback colored circle
+                const gfx = this.add.graphics();
+                gfx.lineStyle(4, 0xffffff, 1);
+                gfx.strokeCircle(radius, radius, radius);
+                gfx.fillStyle(playerColor, 1);
+                gfx.fillCircle(radius, radius, radius);
+                this.player.add(gfx);
+            }
 
-        // follow player
-        this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
+            // username text
+            this.playerName = this.add.bitmapText(radius, -radius, 'pixel', username, 12).setOrigin(0.5);
+            this.player.add(this.playerName);
 
-        // prevent the player from moving off the screen (world bounds)
-        this.player.body.setCollideWorldBounds(true);
+            // physics
+            this.player.setPosition(x, y);
+            this.physics.world.enable(this.player);
+            this.player.body.setCircle(radius);
+            this.player.body.setDrag(100, 100);
+            this.player.body.setCollideWorldBounds(true);
 
-        this.worldElements.add(this.player);
+            // camera follow
+            this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
+
+            // add to world
+            this.worldElements.add(this.player);
+        });
     }
 
-    createOtherPlayer(x, y, username, playerColor, teamColor) {
-        // create player container
-        const otherPlayer = this.add.container(x, y);
-        otherPlayer.teamColor = teamColor;
-        otherPlayer.hasFlag = false;
-        // create player object with circle
-        const radius = 20;
-        const sprite = this.add.graphics();
-        sprite.fillStyle(playerColor, 1);
-        sprite.fillCircle(radius, radius, radius);
-        otherPlayer.add(sprite);
+    createOtherPlayer(x, y, username, playerColor, teamColor, imageUrl) {
+        this.loadAvatarTexture(username, imageUrl, (avatarKey) => {
+            const radius = 20;
 
-        // create player name centered over sprite
-        const name = this.add.bitmapText(radius, -radius, 'pixel', username, 12).setOrigin(0.5);
-        otherPlayer.add(name);
+            // Create container
+            const otherPlayer = this.add.container(x, y);
+            otherPlayer.teamColor = teamColor;
+            otherPlayer.hasFlag = false;
 
-        // store in player dict
-        otherPlayer.username = username;
-        this.otherPlayers[username] = otherPlayer;
-        this.worldElements.add(otherPlayer);
+            let avatarSprite;
+
+            if (avatarKey) {
+                // Avatar image
+                avatarSprite = this.add.image(radius, radius, avatarKey)
+                    .setDisplaySize(radius * 2 - 4, radius * 2 - 4); // smaller to fit within border
+
+                // Circular mask
+                const maskShape = this.make.graphics({ x: 0, y: 0, add: false });
+                maskShape.fillStyle(0xffffff);
+                maskShape.fillCircle(radius, radius, radius - 2);
+                const mask = maskShape.createGeometryMask();
+                avatarSprite.setMask(mask);
+            } else {
+                // Fallback solid circle
+                avatarSprite = this.add.graphics();
+                avatarSprite.fillStyle(playerColor, 1);
+                avatarSprite.fillCircle(radius, radius, radius);
+            }
+
+            otherPlayer.add(avatarSprite);
+
+            // Name label
+            const nameText = this.add.bitmapText(radius, -radius, 'pixel', username, 12).setOrigin(0.5);
+            otherPlayer.add(nameText);
+
+            // Save and add to world
+            otherPlayer.username = username;
+            this.otherPlayers[username] = otherPlayer;
+            this.worldElements.add(otherPlayer);
+        });
     }
 
     createFlag(position, color, colorCode) {
         // if flag already exists do not create
         if (this.flags[color]) return;
-        
+
         const flag = this.add.image(position.x, position.y, 'flag')
             .setScale(2).setTint(colorCode);
         this.flags[color] = flag;
@@ -424,9 +484,9 @@ export class Game extends BaseScene {
 
     checkKillAttempt() {
         const killThreshold = 40;
-    
+
         for (const [targetUsername, targetPlayer] of Object.entries(this.otherPlayers)) {
-            
+
             // if targetPlayer is the same team, skip
             if (targetPlayer.teamColor === this.player.teamColor) continue;
 
@@ -434,7 +494,7 @@ export class Game extends BaseScene {
             const x = targetPlayer.x - this.player.x;
             const y = targetPlayer.y - this.player.y;
             const distance = Math.hypot(x, y);
-        
+
             if (distance < killThreshold) {
 
                 const targetColor = targetPlayer.teamColor;
@@ -443,7 +503,7 @@ export class Game extends BaseScene {
                 // if target player has a flag, drop the flag
                 let flagColor = null;
                 let hasFlag = false;
-                if (targetPlayer.hasFlag){
+                if (targetPlayer.hasFlag) {
                     flagColor = targetPlayer.flagColor;
                     hasFlag = targetPlayer.hasFlag;
                     this.dropoffFlagByKilled(targetPlayer.flagColor, targetUsername);
@@ -457,10 +517,10 @@ export class Game extends BaseScene {
                     color: targetColor,
                     position: targetBasePosition
                 });
-                
+
                 // respawn killed player
                 this.respawnPlayer(targetUsername, targetBasePosition);
-            
+
                 break;  // only kill one player per key press
             }
         }
@@ -473,7 +533,7 @@ export class Game extends BaseScene {
         } else {
             playerToUpdate = this.otherPlayers[targetUsername];
         }
-        
+
         playerToUpdate.setPosition(targetBasePosition.x, targetBasePosition.y)
     }
 
@@ -481,7 +541,7 @@ export class Game extends BaseScene {
         const passThreshold = 40;
 
         for (const [targetUsername, targetPlayer] of Object.entries(this.otherPlayers)) {
-                        
+
             // if targetPlayer is not the same team, skip
             if (targetPlayer.teamColor !== this.player.teamColor) continue;
 
@@ -489,22 +549,22 @@ export class Game extends BaseScene {
             const x = targetPlayer.x - this.player.x;
             const y = targetPlayer.y - this.player.y;
             const distance = Math.hypot(x, y);
-        
+
             if (distance < passThreshold) {
 
                 const color = this.player.flagColor;
 
                 this.passFlag(this.game.username, targetPlayer.username, color);
-                
+
                 this.ws.emit('pass_flag', {
                     sender: this.game.username,
                     receiver: targetUsername,
                     color: color
                 });
-            
+
                 break;  // only pass to one player per key press
             }
-            
+
         }
     }
 
@@ -514,16 +574,16 @@ export class Game extends BaseScene {
         let receiverToUpdate;
         if (sender === this.game.username) {
             senderToUpdate = this.player;
-        }else{
+        } else {
             senderToUpdate = this.otherPlayers[sender];
         }
-        
+
         if (receiver === this.game.username) {
             receiverToUpdate = this.player;
-        }else{
+        } else {
             receiverToUpdate = this.otherPlayers[receiver];
         }
-        
+
         const flagSprite = this.add.image(0, 0, 'flag')
             .setScale(1.2)
             .setTint(COLOR[color])

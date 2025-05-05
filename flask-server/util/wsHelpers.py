@@ -1,4 +1,5 @@
 import random
+from util.database import user_collection
 
 class Helper:
     def __init__(self):
@@ -73,7 +74,8 @@ class Helper:
             "score": 0,
             "hasFlag": False,
             "color": teamToJoin,
-            "position": spawnPosition
+            "position": spawnPosition,
+            "pfp": self.findAvatar(username)
         }
 
         self.teamData[teamToJoin]["numPlayers"] += 1 # increment number of teams
@@ -83,6 +85,7 @@ class Helper:
             "hasFlag": False,
             "color": teamToJoin,
             "position": spawnPosition,
+            "pfp": self.findAvatar(username)
         }
 
         return joinData
@@ -117,3 +120,10 @@ class Helper:
 
     def resetFlag(self, color):
         self.teamData[color]["flagPosition"] = self.teamData[color]["basePosition"]
+
+    def findAvatar(self, username):
+        user = user_collection.find_one(
+            {"username": username},
+            {"_id": 0, "avatarUrl": 1}
+        )
+        return user.get("avatarUrl") if user else None
