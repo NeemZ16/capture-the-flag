@@ -170,6 +170,8 @@ api.add_resource(Me,       "/me")
 # Profile endpoints
 api.add_resource(Profile,      "/profile")
 api.add_resource(AvatarUpload, "/avatar")
+# fetch specific user stats
+api.add_resource(PlayerStats, "/stats/<string:username>")
 
 @app.after_request
 def log_request(response):

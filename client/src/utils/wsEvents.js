@@ -37,6 +37,14 @@ export function connectWS(scene) {
     scene.ws.on(SOCKET_EVENTS.FLAG_SCORED, d => {
         onFlagScore(d, scene);
     })
+
+    scene.ws.on(SOCKET_EVENTS.PLAYER_KILLED, d => {
+        onPlayerKilled(d, scene);
+    })
+
+    scene.ws.on(SOCKET_EVENTS.PASS_FLAG, d => {
+        onPassFlag(d, scene);
+    })
 }
 
 function onInit(d, scene) {
@@ -52,6 +60,7 @@ function onInit(d, scene) {
                 player.position.y, 
                 username, 
                 COLOR[player.color],
+                player.color
             );
 
             scene.playerScoreList.add(username, allPlayers[username].score, allPlayers[username].color);
@@ -81,7 +90,7 @@ function onJoin(d, scene) {
     if (d.username === scene.game.username) {
         scene.createPlayer(d.position.x, d.position.y, d.username, COLOR[d.color], d.color);
     } else if (!(d.username in scene.otherPlayers)) {
-        scene.createOtherPlayer(d.position.x, d.position.y, d.username, COLOR[d.color]);
+        scene.createOtherPlayer(d.position.x, d.position.y, d.username, COLOR[d.color], d.color);
     }
     
     scene.playerScoreList.add(d.username, 0, d.color);
@@ -93,6 +102,7 @@ function onMove(d, scene) {
 
     // update that player's position
     const playerToMove = scene.otherPlayers[username];
+
     if (playerToMove) {
         playerToMove.setPosition(position.x, position.y);
     }
@@ -136,6 +146,21 @@ function onFlagScore(d, scene) {
     scene.playerScoreList.updateScore(d.username, d.playerScore, d.color);
 }
 
+function onPlayerKilled(d, scene) {
+
+    // if killed player has a flag, drop the flag
+    if (d.hasFlag){
+        scene.dropoffFlagByKilled(d.flagColor, d.username);
+    }
+
+    // respwan killed player
+    scene.respawnPlayer(d.username, d.position);
+}
+
+function onPassFlag(d, scene) {
+    scene.passFlag(d.sender, d.receiver, d.color);
+}
+
 /**
  * If a player is carrying a flag and someone else refreshes, that player no longer has a flag on redraw.
  * This adds back the flags on refresh since backend is sending flagPossession dict on init
@@ -146,7 +171,7 @@ function updatePlayerFlags(flagData, scene) {
     for (const [username, flagColor] of Object.entries(flagData)) {
         // if self then continue -- you already have the flag
         if (username === scene.game.username) continue;
-
+        
         // get player to update
         const playerToUpdate = scene.otherPlayers[username]
         if (playerToUpdate.carriedFlag) continue;
