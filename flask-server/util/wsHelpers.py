@@ -73,7 +73,9 @@ class Helper:
             "score": 0,
             "hasFlag": False,
             "color": teamToJoin,
-            "position": spawnPosition
+            "position": spawnPosition,
+            "kill_score": 0,
+            "steal_score": 0,
         }
 
         self.teamData[teamToJoin]["numPlayers"] += 1 # increment number of teams

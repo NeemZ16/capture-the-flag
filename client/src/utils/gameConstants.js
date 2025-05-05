@@ -14,5 +14,6 @@ export const SOCKET_EVENTS = {
   FLAG_SCORED:  'flag_scored',
   MOVE:         'move',
   PLAYER_KILLED:'player_killed',
+  STEAL_FLAG:   'steal_flag',
   PASS_FLAG:    'pass_flag'
 };
