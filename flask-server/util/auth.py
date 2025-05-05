@@ -1,4 +1,4 @@
-from util.database import user_collection, auth_token_collection, salt_collection
+from util.database import user_collection, auth_token_collection
 from flask_restful import Resource
 from flask import request, make_response
 import re

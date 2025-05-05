@@ -170,16 +170,16 @@ api.add_resource(Me,       "/me")
 api.add_resource(Profile,      "/profile")
 api.add_resource(AvatarUpload, "/avatar")
 
-@flask_app.after_request
+@app.after_request
 def log_request(response):
     ip     = request.remote_addr or "-"
     method = request.method
     path   = request.path
     status = response.status_code
 
-    flask_app.logger.info(f"{ip} {method} {path} {status}")
+    app.logger.info(f"{ip} {method} {path} {status}")
 
     return response
 
 if __name__ == "__main__":
-    socketio.run(flask_app, host="0.0.0.0", port=8000, log_output=True)
+    socketio.run(app, host="0.0.0.0", port=8000, log_output=True)
