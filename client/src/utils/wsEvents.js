@@ -146,7 +146,7 @@ function onPlayerKilled(d, scene) {
 
     // if killed player has a flag, drop the flag
     if (d.hasFlag){
-        scene.dropoffFlag(d.flagColor, d.username);
+        scene.dropoffFlagByKilled(d.flagColor, d.username);
     }
 
     // respwan killed player

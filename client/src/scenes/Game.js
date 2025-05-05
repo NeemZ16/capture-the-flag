@@ -402,6 +402,26 @@ export class Game extends BaseScene {
         this.createFlag(this.basePositions[color], color, COLOR[color])
     }
 
+
+    dropoffFlagByKilled(color, username) {
+        // get player with username
+        let playerToUpdate;
+        if (username === this.game.username) {
+            playerToUpdate = this.player;
+        } else {
+            playerToUpdate = this.otherPlayers[username];
+        }
+
+        // remove flag sprite
+        playerToUpdate.carriedFlag.destroy();
+        playerToUpdate.carriedFlag = null;
+        playerToUpdate.flagColor = null;
+        playerToUpdate.hasFlag = false;
+
+        // create flag at base
+        this.createFlag(this.basePositions[color], color, COLOR[color])
+    }
+
     checkKillAttempt() {
         const killThreshold = 40;
     
@@ -426,7 +446,7 @@ export class Game extends BaseScene {
                 if (targetPlayer.hasFlag){
                     flagColor = targetPlayer.flagColor;
                     hasFlag = targetPlayer.hasFlag;
-                    this.dropoffFlag(targetPlayer.flagColor, targetUsername);
+                    this.dropoffFlagByKilled(targetPlayer.flagColor, targetUsername);
                 }
 
                 // send targeted player info to update data through websocket
