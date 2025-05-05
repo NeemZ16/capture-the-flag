@@ -477,6 +477,71 @@ export class Game extends BaseScene {
         playerToUpdate.setPosition(targetBasePosition.x, targetBasePosition.y)
     }
 
+    checkPassFlag() {
+        const passThreshold = 40;
+
+        for (const [targetUsername, targetPlayer] of Object.entries(this.otherPlayers)) {
+                        
+            // if targetPlayer is not the same team, skip
+            if (targetPlayer.teamColor !== this.player.teamColor) continue;
+
+            // evaluate if any player is in target range
+            const x = targetPlayer.x - this.player.x;
+            const y = targetPlayer.y - this.player.y;
+            const distance = Math.hypot(x, y);
+        
+            if (distance < passThreshold) {
+
+                const color = this.player.flagColor;
+
+                this.passFlag(this.game.username, targetPlayer.username, color);
+                
+                this.ws.emit('pass_flag', {
+                    sender: this.game.username,
+                    receiver: targetUsername,
+                    color: color
+                });
+            
+                break;  // only pass to one player per key press
+            }
+            
+        }
+    }
+
+    passFlag(sender, receiver, color) {
+
+        let senderToUpdate;
+        let receiverToUpdate;
+        if (sender === this.game.username) {
+            senderToUpdate = this.player;
+        }else{
+            senderToUpdate = this.otherPlayers[sender];
+        }
+        
+        if (receiver === this.game.username) {
+            receiverToUpdate = this.player;
+        }else{
+            receiverToUpdate = this.otherPlayers[receiver];
+        }
+        
+        const flagSprite = this.add.image(0, 0, 'flag')
+            .setScale(1.2)
+            .setTint(COLOR[color])
+            .setAngle(45)
+            .setOrigin(0.5)
+            .setPosition(40, 15);
+
+        receiverToUpdate.add(flagSprite);
+        receiverToUpdate.carriedFlag = flagSprite;
+        receiverToUpdate.flagColor = color;
+        receiverToUpdate.hasFlag = true;
+
+        senderToUpdate.carriedFlag.destroy();
+        senderToUpdate.carriedFlag = null;
+        senderToUpdate.flagColor = null;
+        senderToUpdate.hasFlag = false;
+    }
+
     create() {
         // set up cameras containers and groups
         this.worldSize = 2000;
@@ -487,7 +552,8 @@ export class Game extends BaseScene {
         this.cameras.main.ignore(this.uiElements);
         this.otherPlayers = {};
         this.flags = {};
-        this.killKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.K);
+        this.killKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+        this.passFlagKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
         this.teamScoreValues = {};
 
         // initialize functions
@@ -562,6 +628,13 @@ export class Game extends BaseScene {
         if (Phaser.Input.Keyboard.JustDown(this.killKey)) {
             this.checkKillAttempt();
         }
+
+        if (Phaser.Input.Keyboard.JustDown(this.passFlagKey)) {
+            // check if the player has a flag
+            if (!this.player.hasFlag) return;
+            this.checkPassFlag();
+        }
+
     }
 
     onResize() {

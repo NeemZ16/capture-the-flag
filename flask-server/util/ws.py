@@ -82,10 +82,20 @@ def killPlayer(data):
         helper.players[username]["hasFlag"] = False
         flagColor = helper.flagPossession.pop(username)
         helper.resetFlag(flagColor)
-    
+
     socketio.emit("player_killed", data, include_self=False)
     
 
 @socketio.on("pass_flag")
-def passFlag():
-    pass
+def passFlag(data):
+    # data = {sender, receiver, color}
+    # update receiver with flag
+    helper.players[data["receiver"]]["hasFlag"] = True
+    helper.flagPossession[data["receiver"]] = data["color"]
+
+    # update sender without flag
+    helper.players[data["sender"]]["hasFlag"] = False
+    helper.flagPossession.pop(data["sender"])
+
+    socketio.emit("pass_flag", data, include_self=False)
+    
