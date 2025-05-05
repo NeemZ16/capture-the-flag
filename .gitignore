@@ -27,6 +27,7 @@ venv.bak/
 
 # Flask specific files (e.g., instance folder)
 instance/
+avatars/
 
 # Environment secrets (common for Python projects)
 .env

@@ -166,6 +166,7 @@ api.add_resource(Register, "/register")
 api.add_resource(Login,    "/login")
 api.add_resource(Logout,   "/logout")
 api.add_resource(Me,       "/me")
+
 # Profile endpoints
 api.add_resource(Profile,      "/profile")
 api.add_resource(AvatarUpload, "/avatar")

@@ -60,11 +60,12 @@ function onInit(d, scene) {
         if (username !== scene.game.username && !(username in scene.otherPlayers)) {
             const player = allPlayers[username];
             scene.createOtherPlayer(
-                player.position.x, 
-                player.position.y, 
-                username, 
+                player.position.x,
+                player.position.y,
+                username,
                 COLOR[player.color],
-                player.color
+                player.color,
+                getImgUrl(player.pfp)
             );
 
             scene.playerScoreList.add(username, allPlayers[username].score, allPlayers[username].color);
@@ -89,14 +90,23 @@ function onInit(d, scene) {
     }
 }
 
+function getImgUrl(url) {
+    if (!url) return;
+    if (url.startsWith('/')) {
+        url = url.slice(1);
+    }
+    return import.meta.env.VITE_API_URL + url;
+
+}
+
 function onJoin(d, scene) {
     // expecting d.color to be string color name
     if (d.username === scene.game.username) {
-        scene.createPlayer(d.position.x, d.position.y, d.username, COLOR[d.color], d.color);
+        scene.createPlayer(d.position.x, d.position.y, d.username, COLOR[d.color], d.color, getImgUrl(d.pfp));
     } else if (!(d.username in scene.otherPlayers)) {
-        scene.createOtherPlayer(d.position.x, d.position.y, d.username, COLOR[d.color], d.color);
+        scene.createOtherPlayer(d.position.x, d.position.y, d.username, COLOR[d.color], d.color, getImgUrl(d.pfp));
     }
-    
+
     scene.playerScoreList.add(d.username, 0, d.color);
 }
 
@@ -183,7 +193,7 @@ function updatePlayerFlags(flagData, scene) {
     for (const [username, flagColor] of Object.entries(flagData)) {
         // if self then continue -- you already have the flag
         if (username === scene.game.username) continue;
-        
+
         // get player to update
         const playerToUpdate = scene.otherPlayers[username]
         if (playerToUpdate.carriedFlag) continue;

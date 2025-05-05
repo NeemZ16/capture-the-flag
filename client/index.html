@@ -23,11 +23,13 @@
         </div>
         <h1>Profile</h1>
         <div class="profile-content">
-            <img id="profileImg" src="" alt="avatar">
+            <img id="profileImg" src="placeholder.png" alt="avatar">
             <div style="display: flex; flex-direction: column; justify-content: space-between;">
                 <p id="username" style="text-align: left;">{{username}}</p>
+                <span id="uploadMsg"></span>
                 <div>
                     <button id="uploadImg">Change Avatar</button>
+                    <input type="file" id="fileInput" style="display: none;" accept="image/png, image/jpeg" />
                     <button id="startGame">Join Game!</button>
                 </div>
             </div>
