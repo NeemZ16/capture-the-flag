@@ -42,6 +42,10 @@ export function connectWS(scene) {
         onPlayerKilled(d, scene);
     })
 
+    scene.ws.on(SOCKET_EVENTS.STEAL_FLAG, d => {
+        onStealFlag(d, scene);
+    })
+
     scene.ws.on(SOCKET_EVENTS.PASS_FLAG, d => {
         onPassFlag(d, scene);
     })
@@ -147,18 +151,26 @@ function onFlagScore(d, scene) {
 }
 
 function onPlayerKilled(d, scene) {
-
     // if killed player has a flag, drop the flag
     if (d.hasFlag){
-        scene.dropoffFlagByKilled(d.flagColor, d.username);
+        scene.dropoffFlagByKilled(d.flagColor, d.targetUsername);
     }
-
     // respwan killed player
-    scene.respawnPlayer(d.username, d.position);
+    scene.respawnPlayer(d.targetUsername, d.targetBasePosition);
+}
+
+
+async function onStealFlag(d, scene) {
+    
+    // if (d.username == scene.game.username) {
+    //     scene.wait(d.freeze_time);
+    // }
+
+    scene.stealFlag(d.stealer, d.targetUsername, d.flagColor);
 }
 
 function onPassFlag(d, scene) {
-    scene.passFlag(d.sender, d.receiver, d.color);
+    scene.passFlag(d.sender, d.targetUsername, d.flagColor);
 }
 
 /**

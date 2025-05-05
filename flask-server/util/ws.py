@@ -61,31 +61,45 @@ def broadcastFlagScored(data):
         {"username": username},
         {"$inc": {"stats.flags_scored": 1}}
     )
-
-    print(helper.teamData)
     
     # broadcast client data
     socketio.emit("flag_scored", data, include_self=False)
     
 @socketio.on("player_killed")
 def killPlayer(data):
+    # data = {killer, targetUsername, hasFlag, flagColor, targetBasePosition}
+
+    helper.players[data["killer"]]["kill_score"] += 1
     
     # if killed player has a flag, update following
     if data["hasFlag"]:
-        username = data["username"]
+        username = data["targetUsername"]
         helper.players[username]["hasFlag"] = False
         flagColor = helper.flagPossession.pop(username)
         helper.resetFlag(flagColor)
 
     socketio.emit("player_killed", data, include_self=False)
-    
+
+@socketio.on("steal_flag")
+def stealFlag(data):
+    # data = {stealer, targetUsername, flagColor, freeze_time}
+
+    helper.players[data["stealer"]]["steal_score"] += 1
+
+    helper.players[data["stealer"]]["hasFlag"] = True
+    helper.flagPossession[data["stealer"]] = data["flagColor"]
+
+    helper.players[data["targetUsername"]]["hasFlag"] = False
+    helper.flagPossession.pop(data["targetUsername"])
+
+    socketio.emit("steal_flag", data, include_self=False)
 
 @socketio.on("pass_flag")
 def passFlag(data):
-    # data = {sender, receiver, color}
+    # data = {sender, targetUsername, flagColor}
     # update receiver with flag
-    helper.players[data["receiver"]]["hasFlag"] = True
-    helper.flagPossession[data["receiver"]] = data["color"]
+    helper.players[data["targetUsername"]]["hasFlag"] = True
+    helper.flagPossession[data["targetUsername"]] = data["flagColor"]
 
     # update sender without flag
     helper.players[data["sender"]]["hasFlag"] = False
