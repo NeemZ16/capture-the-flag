@@ -61,8 +61,6 @@ def broadcastFlagScored(data):
         {"username": username},
         {"$inc": {"stats.flags_scored": 1}}
     )
-
-    print(helper.teamData)
     
     # broadcast client data
     socketio.emit("flag_scored", data, include_self=False)
@@ -72,8 +70,6 @@ def killPlayer(data):
     # data = {killer, targetUsername, hasFlag, flagColor, targetBasePosition}
 
     helper.players[data["killer"]]["kill_score"] += 1
-
-    print(helper.players)
     
     # if killed player has a flag, update following
     if data["hasFlag"]:
