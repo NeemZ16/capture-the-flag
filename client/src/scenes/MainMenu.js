@@ -7,7 +7,7 @@ export class MainMenu extends BaseScene {
     
     create() {
         if (this.game.username) {
-            this.scene.start('Game');
+            this.scene.start('Profile');
         }
 
         this.uiContainer = this.add.container(this.dimensions.width / 2, this.dimensions.height / 2);
@@ -30,14 +30,6 @@ export class MainMenu extends BaseScene {
                 this.scene.start('Register');
             })
         this.uiContainer.add(this.registerText);
-
-        // this.guestText = this.add.bitmapText(0, 30 + 25 + 30 + 25 + 30, 'pixel', 'play as guest', 25)
-        //     .setOrigin(0.5)
-        //     .setInteractive({ cursor: 'pointer' })
-        //     .on('pointerdown', () => {
-        //         this.scene.start('Game');
-        //     })
-        // this.uiContainer.add(this.guestText);
 
         // Menu options
         this.menuOptions = [this.loginText, this.registerText];

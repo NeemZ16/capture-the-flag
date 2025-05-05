@@ -82,7 +82,7 @@ class Helper:
             "username": username,
             "hasFlag": False,
             "color": teamToJoin,
-            "position": spawnPosition
+            "position": spawnPosition,
         }
 
         return joinData

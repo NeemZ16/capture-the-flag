@@ -58,13 +58,15 @@ function onInit(d, scene) {
                 COLOR[player.color],
                 player.color
             );
+
+            scene.playerScoreList.add(username, allPlayers[username].score, allPlayers[username].color);
         }
     }
 
     // update flags carried by players
     updatePlayerFlags(d.flagPossession, scene);
 
-    // generate flags for the new player
+    // generate flags and scores
     for (const color in teamData) {
         const colorCode = COLOR[color];
         const data = teamData[color];
@@ -73,6 +75,9 @@ function onInit(d, scene) {
         if (data.flagPosition) {
             scene.createFlag(data.flagPosition, color, colorCode);
         }
+
+        // update team scores
+        scene.teamScoreValues[color].setText(data.score.toString());
     }
 }
 
@@ -83,6 +88,8 @@ function onJoin(d, scene) {
     } else if (!(d.username in scene.otherPlayers)) {
         scene.createOtherPlayer(d.position.x, d.position.y, d.username, COLOR[d.color], d.color);
     }
+    
+    scene.playerScoreList.add(d.username, 0, d.color);
 }
 
 function onMove(d, scene) {
@@ -106,9 +113,12 @@ function onLeave(d, scene) {
 
         // remove from world elements
         scene.worldElements.remove(player, true, true);
+
+        // remove from player scoreboard
+        scene.playerScoreList.remove(d.username);
     }
 
-    // update flag position if needed
+    // update flag position and score if needed
     for (const color in d.teamData) {
         const colorCode = COLOR[color];
         const data = d.teamData[color];
@@ -117,6 +127,8 @@ function onLeave(d, scene) {
         if (data.flagPosition) {
             scene.createFlag(data.flagPosition, color, colorCode);
         }
+
+        scene.teamScoreValues[color].setText(data.score.toString());
     }
 }
 
@@ -126,6 +138,8 @@ function onFlagGrab(d, scene) {
 
 function onFlagScore(d, scene) {
     scene.dropoffFlag(d.color, d.username);
+    scene.teamScoreValues[d.teamScore[0]].setText(d.teamScore[1].toString());
+    scene.playerScoreList.updateScore(d.username, d.playerScore, d.color);
 }
 
 function onPlayerKilled(d, scene) {

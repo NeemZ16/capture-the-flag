@@ -7,7 +7,7 @@ export class Register extends BaseScene {
 
     create() {
         if (this.game.username) {
-            this.scene.start('Game');
+            this.scene.start('Profile');
         }
 
         this.uiContainer = this.add.container(this.dimensions.width / 2, this.dimensions.height / 2).setInteractive();

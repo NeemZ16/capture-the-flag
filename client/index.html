@@ -10,8 +10,51 @@
 </head>
 
 <body>
+    <!-- phaser scenes here -->
     <div id="app">
         <div id="game-container"></div>
+    </div>
+    <!-- profile page here, initially display none -->
+    <div id="profile-wrapper">
+        <div class="nav">
+            <span id="welcomeText">hi {{username}}!</span>
+            <img src="assets/logo.png" alt="Capture the Flag logo">
+            <button id="logout">Logout</button>
+        </div>
+        <h1>Profile</h1>
+        <div class="profile-content">
+            <img id="profileImg" src="" alt="avatar">
+            <div style="display: flex; flex-direction: column; justify-content: space-between;">
+                <p id="username" style="text-align: left;">{{username}}</p>
+                <div>
+                    <button id="uploadImg">Change Avatar</button>
+                    <button id="startGame">Join Game!</button>
+                </div>
+            </div>
+            <div id="player-stats">
+                <div class="player-stat-row">
+                    <span class="label">Kills:</span>
+                    <span class="value">--</span>
+                </div>
+                <div class="player-stat-row">
+                    <span class="label">Steals:</span>
+                    <span class="value">--</span>
+                </div>
+                <div class="player-stat-row">
+                    <span class="label">Flags Scored:</span>
+                    <span class="value">--</span>
+                </div>
+            </div>
+        </div>
+        <div class="profile-bottom">
+            <div class="achievements">
+                <h2>Achievements</h2>
+
+            </div>
+            <div class="leaderboard">
+                <h2>Leaderboard</h2>
+            </div>
+        </div>
     </div>
     <script type="module" src="src/main.js"></script>
 </body>
