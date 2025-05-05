@@ -243,16 +243,17 @@ export class Game extends BaseScene {
 
             // avatar or fallback circle
             if (avatarKey) {
-                console.log("AVATAR KEY")
                 const backgroundCircle = this.add.graphics();
-                backgroundCircle.fillStyle(playerColor, 1);  // Set the background color to `playerColor`
-                backgroundCircle.fillCircle(radius, radius, radius);  // Draw the background circle
+                backgroundCircle.fillStyle(playerColor, 1);
+                backgroundCircle.fillCircle(radius, radius, radius);
                 backgroundCircle.lineStyle(2, 0xffffff, 1);
                 backgroundCircle.strokeCircle(radius, radius, radius);
-                this.player.add(backgroundCircle);  // Add to the player container
+                this.player.add(backgroundCircle);
 
-                const avatar = this.add.image(radius, radius, avatarKey)
-                    .setDisplaySize((radius - 4) * 2, (radius - 4) * 2);
+                const avatar = this.add.image(radius, radius, avatarKey);
+                const desiredHeight = (radius - 4) * 2;
+                const scaleFactor = desiredHeight / avatar.height;
+                avatar.setScale(scaleFactor);
 
                 // apply circular mask
                 const maskShape = this.make.graphics({ x: 0, y: 0, add: false });
@@ -304,15 +305,22 @@ export class Game extends BaseScene {
             let avatarSprite;
 
             if (avatarKey) {
-                // Avatar image
-                avatarSprite = this.add.image(radius, radius, avatarKey)
-                    .setDisplaySize(radius * 2 - 4, radius * 2 - 4); // smaller to fit within border
+                const backgroundCircle = this.add.graphics();
+                backgroundCircle.fillStyle(playerColor, 1);
+                backgroundCircle.fillCircle(radius, radius, radius);
+                otherPlayer.add(backgroundCircle);
+
+                avatarSprite = this.add.image(radius, radius, avatarKey);
+                const desiredHeight = (radius - 4) * 2;
+                const scaleFactor = desiredHeight / avatarSprite.height;
+                avatarSprite.setScale(scaleFactor);
 
                 // Circular mask
                 const maskShape = this.make.graphics({ x: 0, y: 0, add: false });
                 maskShape.fillStyle(0xffffff);
-                maskShape.fillCircle(radius, radius, radius - 2);
+                maskShape.fillCircle(0, 0, radius - 2);
                 const mask = maskShape.createGeometryMask();
+                mask.invertAlpha = true;
                 avatarSprite.setMask(mask);
             } else {
                 // Fallback solid circle

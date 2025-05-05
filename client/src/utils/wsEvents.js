@@ -60,7 +60,8 @@ function onInit(d, scene) {
                 player.position.y,
                 username,
                 COLOR[player.color],
-                player.color
+                player.color,
+                getImgUrl(player.pfp)
             );
 
             scene.playerScoreList.add(username, allPlayers[username].score, allPlayers[username].color);
