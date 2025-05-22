@@ -23,5 +23,5 @@ Steps:
 2. Navigate to project directory
 3. Run `docker compose up --build --force-recreate`
 
-## Logging
-Logs are generated in the `logs` directory in the project root. 
+<!-- ## Logging -->
+<!-- Logs are generated in the `logs` directory in the project root.  -->
