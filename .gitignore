@@ -62,6 +62,6 @@ Thumbs.db
 .vscode/
 .idea/
 
-# --- Chris ----
-README_chris.md
-private_key.pem
+*.pem
+*.pub
+
