@@ -27,8 +27,8 @@ CORS(app, origins=["http://localhost:8080"], supports_credentials=True)
 api = Api(app)
 socketio.init_app(app, async_mode=_async_mode)
 
-os.environ['TZ'] = 'America/New_York'
-time.tzset()
+# os.environ['TZ'] = 'America/New_York'
+# time.tzset()
 
 # logging setup
 # os.makedirs("../logs", exist_ok=True)
@@ -160,17 +160,17 @@ time.tzset()
 #     return {"error": "internal-server-error"}, getattr(e, "code", 500)
 
 # auth endpoints
-api.add_resource(Register, "/register")
-api.add_resource(Login,    "/login")
-api.add_resource(Logout,   "/logout")
-api.add_resource(Me,       "/me")
+api.add_resource(Register, "/api/register")
+api.add_resource(Login,    "/api/login")
+api.add_resource(Logout,   "/api/logout")
+api.add_resource(Me,       "/api/me")
 
 # Profile endpoints
-api.add_resource(Profile,      "/profile")
-api.add_resource(AvatarUpload, "/avatar")
+api.add_resource(Profile,      "/api/profile")
+api.add_resource(AvatarUpload, "/api/avatar")
 # fetch specific user stats
-api.add_resource(PlayerStats, "/stats/<string:username>")
-api.add_resource(Leaderboard, "/leaderboard")
+api.add_resource(PlayerStats, "/api/stats/<string:username>")
+api.add_resource(Leaderboard, "/api/leaderboard")
 
 # @app.after_request
 # def log_request(response):
